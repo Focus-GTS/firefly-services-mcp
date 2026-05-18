@@ -1,0 +1,66 @@
+{
+  "name": "@focusgts/firefly-services-mcp",
+  "version": "0.0.1",
+  "description": "Model Context Protocol server for Adobe Firefly Services — exposes Firefly, Photoshop API, and Lightroom API endpoints as MCP tools. Built by FocusGTS.",
+  "type": "module",
+  "main": "dist/server.js",
+  "bin": {
+    "firefly-services-mcp": "dist/server.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "NOTICE",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/server.ts",
+    "start": "node dist/server.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:integration": "FIREFLY_SERVICES_INTEGRATION_TEST=1 vitest run test/integration",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "adobe",
+    "firefly",
+    "firefly-services",
+    "photoshop-api",
+    "lightroom-api",
+    "claude-code",
+    "claude",
+    "anthropic",
+    "focusgts"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@adobe/firefly-apis": "^2.0.1",
+    "@adobe/firefly-services-common-apis": "^2.0.0",
+    "@adobe/lightroom-apis": "^2.0.1",
+    "@adobe/photoshop-apis": "^2.0.1",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "pino": "^9.5.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/focusgts/firefly-services-mcp.git"
+  },
+  "license": "Apache-2.0",
+  "author": {
+    "name": "FocusGTS",
+    "url": "https://focusgts.com"
+  }
+}

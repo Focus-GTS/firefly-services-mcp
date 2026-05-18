@@ -1,0 +1,28 @@
+# Node
+node_modules/
+package-lock.json
+npm-debug.log*
+
+# Build artifacts
+dist/
+*.tsbuildinfo
+
+# Env / secrets
+.env
+.env.*
+*.secret
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Test artifacts
+coverage/
+.nyc_output/
+
+# Local data
+*.db
+*.rvf
+.claude-flow/

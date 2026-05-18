@@ -1,0 +1,79 @@
+Firefly Services MCP Server
+Copyright 2026 FocusGTS
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this product except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+
+===============================================================================
+Trademarks
+===============================================================================
+
+"Adobe", "Adobe Firefly", "Adobe Firefly Services", "Photoshop", "Lightroom",
+"InDesign", "Creative Cloud", "Adobe Express", "Adobe Sensei", "GenStudio",
+and "Adobe Stock" are trademarks or registered trademarks of Adobe Inc.
+in the United States and/or other countries.
+
+"Claude", "Claude Code", and "Model Context Protocol" are trademarks or
+service marks of Anthropic, PBC.
+
+These trademarks are used in this repository in a nominative-fair-use manner,
+solely to identify the products and protocols this MCP server is designed to
+interoperate with. No claim is made to ownership of the trademarks, and no
+endorsement or affiliation with Adobe Inc. or Anthropic, PBC. is asserted or
+implied.
+
+All other product names, logos, brands, and trademarks are property of their
+respective owners.
+
+
+===============================================================================
+Independence and No Affiliation
+===============================================================================
+
+This repository is independently developed and maintained by FocusGTS.
+
+It is NOT:
+  - sponsored, endorsed, affiliated with, or supported by Adobe Inc.
+  - sponsored, endorsed, affiliated with, or supported by Anthropic, PBC.
+  - an official Adobe product, Adobe-sanctioned distribution, or Adobe SDK
+  - an official Anthropic product or MCP server distribution
+
+It IS:
+  - a community-maintained MCP server that wraps the official Adobe SDKs
+    (@adobe/firefly-apis, @adobe/photoshop-apis, @adobe/lightroom-apis,
+    @adobe/firefly-services-common-apis) and exposes their operations as
+    Model Context Protocol tools
+  - Apache-2.0 licensed open source maintained by FocusGTS
+
+
+===============================================================================
+Third-Party Dependencies
+===============================================================================
+
+This software depends on:
+  - @adobe/firefly-apis (Apache-2.0, Adobe Inc.)
+  - @adobe/photoshop-apis (Apache-2.0, Adobe Inc.)
+  - @adobe/lightroom-apis (Apache-2.0, Adobe Inc.)
+  - @adobe/firefly-services-common-apis (Apache-2.0, Adobe Inc.)
+  - @modelcontextprotocol/sdk (Apache-2.0, Anthropic, PBC.)
+  - pino (MIT, Pino contributors)
+  - zod (MIT, Colin McDonnell and contributors)
+
+
+===============================================================================
+No Warranty
+===============================================================================
+
+Distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+either express or implied. See the License for the specific language governing
+permissions and limitations under the License.
+
+Endpoint paths, parameter shapes, rate limits, and other Adobe-platform-
+specific details may change without notice as Adobe evolves its APIs. Users
+should verify against the current official Adobe documentation at
+https://developer.adobe.com/firefly-services/docs/ before relying on any
+specific value cited in this software.
