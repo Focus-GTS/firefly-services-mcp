@@ -42,6 +42,7 @@
   "dependencies": {
     "@adobe/firefly-apis": "^2.0.1",
     "@adobe/firefly-services-common-apis": "^2.0.0",
+    "@adobe/firefly-services-sdk-core": "^2.0.0",
     "@adobe/lightroom-apis": "^2.0.1",
     "@adobe/photoshop-apis": "^2.0.1",
     "@modelcontextprotocol/sdk": "^1.0.0",

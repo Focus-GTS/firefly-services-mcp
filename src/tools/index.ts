@@ -6,31 +6,41 @@
  * the McpServer's `registerTool()` API.
  */
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { FireflyClient } from "@adobe/firefly-apis";
 import type { TokenCache } from "../auth/token-cache.js";
 import { registerCheckAuth } from "./firefly/check-auth.js";
+import { registerGenerateImage } from "./firefly/generate-image.js";
+import { registerUploadImage } from "./firefly/upload-image.js";
 
 export interface ToolContext {
   tokenCache: TokenCache;
+  fireflyClient: FireflyClient;
 }
 
 export function registerAllTools(server: McpServer, ctx: ToolContext): void {
   // ── Firefly tools ───────────────────────────────────────────────────
   registerCheckAuth(server, ctx.tokenCache);
+  registerUploadImage(server, ctx.fireflyClient);
+  registerGenerateImage(server, ctx.fireflyClient);
 
-  // Coming in v0.1 (placeholder ordering for the future register* calls):
-  //   registerGenerateImage(server, ctx.tokenCache);
-  //   registerGenerateSimilar(server, ctx.tokenCache);
-  //   registerExpandImage(server, ctx.tokenCache);
-  //   registerFillImage(server, ctx.tokenCache);
-  //   registerGenerateObjectComposite(server, ctx.tokenCache);
-  //   registerGenerateVideo(server, ctx.tokenCache);
-  //   registerUploadImage(server, ctx.tokenCache);
+  // Coming next in v0.1:
+  //   registerGenerateSimilar(server, ctx.fireflyClient);
+  //   registerExpandImage(server, ctx.fireflyClient);
+  //   registerFillImage(server, ctx.fireflyClient);
+  //   registerGenerateObjectComposite(server, ctx.fireflyClient);
+  //   registerGenerateVideo(server, ctx.fireflyClient);
 
   // ── Photoshop tools (v0.1) ──────────────────────────────────────────
   //   registerPhotoshopSmartObjectReplace(server, ctx.tokenCache);
-  //   ... etc
+  //   registerPhotoshopDocumentManifest(server, ctx.tokenCache);
+  //   registerPhotoshopApplyActions(server, ctx.tokenCache);
+  //   registerPhotoshopEditText(server, ctx.tokenCache);
+  //   registerPhotoshopApplyEdits(server, ctx.tokenCache);
+  //   registerPhotoshopRemoveBackground(server, ctx.tokenCache);
 
   // ── Lightroom tools (v0.1) ──────────────────────────────────────────
   //   registerLightroomApplyPreset(server, ctx.tokenCache);
-  //   ... etc
+  //   registerLightroomAutoTone(server, ctx.tokenCache);
+  //   registerLightroomAutoStraighten(server, ctx.tokenCache);
+  //   registerLightroomApplyEdits(server, ctx.tokenCache);
 }

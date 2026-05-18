@@ -12,11 +12,12 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { loadCredentials, MissingCredentialsError } from "./auth/credentials.js";
 import { TokenCache } from "./auth/token-cache.js";
+import { getFireflyClient } from "./auth/firefly-client.js";
 import { registerAllTools } from "./tools/index.js";
 import { logger } from "./util/logger.js";
 
 const SERVER_NAME = "firefly-services-mcp";
-const SERVER_VERSION = "0.0.1";
+const SERVER_VERSION = "0.0.2";
 
 async function main(): Promise<void> {
   logger.info({ version: SERVER_VERSION }, "starting Firefly Services MCP server");
@@ -35,8 +36,10 @@ async function main(): Promise<void> {
     throw err;
   }
 
-  // Step 2 — token cache (does NOT eagerly fetch a token; lazy on first tool call).
+  // Step 2 — token cache + Firefly SDK client. Both are lazy — no token is
+  // fetched and no Adobe traffic is generated until a tool is actually called.
   const tokenCache = new TokenCache(creds);
+  const fireflyClient = getFireflyClient(creds, tokenCache);
 
   // Step 3 — MCP server + tools.
   const server = new McpServer(
@@ -52,7 +55,7 @@ async function main(): Promise<void> {
     },
   );
 
-  registerAllTools(server, { tokenCache });
+  registerAllTools(server, { tokenCache, fireflyClient });
 
   // Step 4 — connect transport.
   const transport = new StdioServerTransport();
