@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build & test (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["20.x", "22.x"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install dependencies (CI mode, lockfile-faithful)
+        run: npm ci
+
+      - name: Type-check
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify dist/server.js was produced and is well-formed
+        run: |
+          test -f dist/server.js
+          # Verify the file starts with the shebang so `bin` entry works
+          head -n 1 dist/server.js | grep -q '^#!/usr/bin/env node'
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Mocked integration tests (msw)
+        run: npm run test:integration:mocked
+
+      - name: MCP protocol smoke test
+        run: |
+          INIT='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}'
+          INITED='{"jsonrpc":"2.0","method":"notifications/initialized"}'
+          LIST='{"jsonrpc":"2.0","id":2,"method":"tools/list"}'
+          OUT="$(
+            ( printf '%s\n%s\n%s\n' "$INIT" "$INITED" "$LIST"; sleep 1 ) \
+              | FIREFLY_SERVICES_CLIENT_ID=ci-dummy FIREFLY_SERVICES_CLIENT_SECRET=ci-dummy \
+                node dist/server.js 2>/dev/null
+          )"
+          # The second response (id=2) must list 18 tools.
+          TOOL_COUNT="$(printf '%s\n' "$OUT" | node -e 'let n=0; require("fs").readFileSync(0,"utf8").trim().split("\n").forEach(l => { try { const j = JSON.parse(l); if (j.id === 2 && j.result && Array.isArray(j.result.tools)) n = j.result.tools.length; } catch {} }); process.stdout.write(String(n));')"
+          echo "tools registered: $TOOL_COUNT"
+          test "$TOOL_COUNT" = "18"
+
+  publish-dry-run:
+    name: npm publish dry-run (catches packaging regressions)
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: npm pack (dry run)
+        run: |
+          npm pack --dry-run 2>&1 | tee /tmp/pack.log
+          # Sanity: the tarball must include dist/, README.md, NOTICE, LICENSE,
+          # and must NOT include test/, examples/, .github/, src/.
+          grep -q 'dist/server.js' /tmp/pack.log
+          grep -q 'README.md' /tmp/pack.log
+          grep -q 'NOTICE' /tmp/pack.log
+          grep -q 'LICENSE' /tmp/pack.log
+          ! grep -q 'test/' /tmp/pack.log
+          ! grep -q 'examples/' /tmp/pack.log
+          ! grep -q '.github/' /tmp/pack.log
+          ! grep -q 'src/' /tmp/pack.log
