@@ -8,6 +8,9 @@
  * Per ADR-002, stdio is the v0.1 transport. Per ADR-003, single-credential
  * loaded from environment variables at startup.
  */
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { loadCredentials, MissingCredentialsError } from "./auth/credentials.js";
@@ -19,7 +22,15 @@ import { registerAllTools } from "./tools/index.js";
 import { logger } from "./util/logger.js";
 
 const SERVER_NAME = "firefly-services-mcp";
-const SERVER_VERSION = "0.1.0";
+
+// Read version from the bundled package.json at runtime. This keeps
+// SERVER_VERSION in lockstep with the npm-published version and means
+// bumping the package version is a single-file change.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const packageJson = JSON.parse(
+  readFileSync(path.join(__dirname, "..", "package.json"), "utf8"),
+) as { version: string };
+const SERVER_VERSION = packageJson.version;
 
 async function main(): Promise<void> {
   logger.info({ version: SERVER_VERSION }, "starting Firefly Services MCP server");

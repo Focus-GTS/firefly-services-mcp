@@ -1,7 +1,8 @@
 # Firefly Services MCP Server
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Status](https://img.shields.io/badge/status-v0.0.1%20skeleton-orange.svg)](#status)
+[![Status](https://img.shields.io/badge/status-v0.1.0-green.svg)](#status)
+[![Tools](https://img.shields.io/badge/tools-18-blue.svg)](#tools-v01-surface--18-tools)
 
 Model Context Protocol server for **Adobe Firefly Services** — exposes Firefly, Photoshop API, and Lightroom API endpoints as MCP tools that Claude Code, Cursor, and other MCP-compatible AI clients can call directly.
 
@@ -11,7 +12,7 @@ Built by [FocusGTS](https://focusgts.com). Not affiliated with or endorsed by Ad
 
 ## Status
 
-**v0.0.1 — Skeleton.** The MCP server boots, handles the `initialize` and `tools/list` protocol surface, and registers the first tool (`firefly_check_auth`). v0.1 (the full 18-tool surface) is in active development. See [`docs/PRD.md`](docs/PRD.md) for the release plan.
+**v0.1.0 — 18 tools, fully implemented.** The MCP server boots over stdio, implements the MCP protocol, and registers all 18 tools across Firefly (8), Photoshop API (6), and Lightroom API (4). Test coverage: 77 unit tests + 26 mocked integration tests passing. Live integration against the Adobe Firefly Services sandbox is the next milestone — until then the surface is SDK-validated rather than live-validated. See [`docs/PRD.md`](docs/PRD.md) for the release plan.
 
 ---
 
@@ -23,24 +24,43 @@ This is **not** an Adobe SDK and **not** a replacement for one. It is a thin MCP
 
 ---
 
-## Install (preview, once published)
+## Install
+
+### Option 1 — From source (recommended during the v0.1.x cycle)
 
 ```bash
-# Add to Claude Code
-claude mcp add firefly-services -- npx @focusgts/firefly-services-mcp
+git clone https://github.com/focusgts/firefly-services-mcp.git
+cd firefly-services-mcp
+npm install   # builds dist/ automatically via the prepare script
 
-# Or run directly
-npx @focusgts/firefly-services-mcp
+# Add to Claude Code
+claude mcp add firefly-services -- node "$(pwd)/dist/server.js"
 ```
 
-Required environment variables:
+For the development loop without a build step:
+
+```bash
+claude mcp add firefly-services -- npx tsx "$(pwd)/src/server.ts"
+```
+
+### Option 2 — From npm (preview, once published)
+
+When the package is published to npm, install becomes one line:
+
+```bash
+claude mcp add firefly-services -- npx @focusgts/firefly-services-mcp
+```
+
+Track the publication status in `docs/PRD.md` §11.
+
+### Required environment variables
 
 ```bash
 export FIREFLY_SERVICES_CLIENT_ID=<your client id from Adobe Developer Console>
 export FIREFLY_SERVICES_CLIENT_SECRET=<your client secret>
 ```
 
-The credentials must be an **OAuth Server-to-Server** credential pair issued via the Adobe Developer Console with Firefly Services API access provisioned on the workspace. See the [`firefly-services-bootstrap`](https://github.com/focusgts/firefly-services-skills/blob/main/plugins/firefly-services/skills/firefly-services-bootstrap/SKILL.md) skill for the full setup walkthrough.
+The credentials must be an **OAuth Server-to-Server** credential pair issued via the Adobe Developer Console with Firefly Services API access provisioned on the workspace. See [`examples/install-claude-code.md`](examples/install-claude-code.md) for the full credential-acquisition walkthrough or the [`firefly-services-bootstrap`](https://github.com/focusgts/firefly-services-skills/blob/main/plugins/firefly-services/skills/firefly-services-bootstrap/SKILL.md) skill for the FDE-grade detail.
 
 ---
 
@@ -54,7 +74,7 @@ The credentials must be an **OAuth Server-to-Server** credential pair issued via
 - `firefly_generate_object_composite`
 - `firefly_generate_video`
 - `firefly_upload_image`
-- `firefly_check_auth` *(shipped in v0.0.1)*
+- `firefly_check_auth`
 
 ### Photoshop API (6)
 - `photoshop_smart_object_replace`
@@ -116,8 +136,11 @@ FIREFLY_SERVICES_CLIENT_ID=<id> FIREFLY_SERVICES_CLIENT_SECRET=<secret> npm run 
 # Unit tests (mocked SDKs)
 npm test
 
-# Integration tests (real Adobe API — needs valid credentials)
-FIREFLY_SERVICES_INTEGRATION_TEST=1 npm run test:integration
+# Mocked integration tests (HTTP-layer mocks via msw)
+npm run test:integration:mocked
+
+# Live integration tests (real Adobe API — needs valid credentials)
+npm run test:integration:live
 
 # Build for production
 npm run build
@@ -135,7 +158,7 @@ LIST='{"jsonrpc":"2.0","id":2,"method":"tools/list"}'
   | FIREFLY_SERVICES_CLIENT_ID=dummy FIREFLY_SERVICES_CLIENT_SECRET=dummy npm run dev
 ```
 
-You should see two JSON-RPC responses on stdout — the second one lists `firefly_check_auth` and any other registered tools.
+You should see two JSON-RPC responses on stdout — the second one lists all registered tools.
 
 ---
 
@@ -164,4 +187,4 @@ Copyright © 2026 FocusGTS.
 
 ## Related projects
 
-- [`focusgts/firefly-services-skills`](https://github.com/focusgts/firefly-services-skills) — 13 Claude Code skills documenting the Firefly Services workflow patterns; companion to this MCP server
+- [`focusgts/firefly-services-skills`](https://github.com/focusgts/firefly-services-skills) — Companion Claude Code skills documenting the Firefly Services workflow patterns. The skills repo's [catalog](https://github.com/focusgts/firefly-services-skills/blob/main/plugins/firefly-services/skills/firefly-skills-catalog/SKILL.md) keeps an up-to-date count and index.

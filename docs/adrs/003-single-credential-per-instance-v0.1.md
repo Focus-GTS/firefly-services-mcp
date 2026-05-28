@@ -33,7 +33,7 @@ These two modes have very different complexity.
 
 ### Mitigations
 - v0.2 will add multi-credential support; ADR will supersede this one
-- For v0.1 multi-customer needs, users can run multiple server instances, one per customer, each with `MCP_SERVER_NAME=firefly-services-customer-a` (or whatever) so Claude can route to the right one explicitly. This is ugly but workable.
+- For v0.1 multi-customer needs, users can run multiple server instances, one per customer, each with a distinct `MCP_SERVER_NAME` (e.g., `firefly-services-customer-a`, `firefly-services-customer-b`) so Claude can route to the right one explicitly. This is ugly but workable.
 
 ## Alternatives considered
 

@@ -26,3 +26,7 @@ coverage/
 *.db
 *.rvf
 .claude-flow/
+
+# Internal audit reports — these document strategy and findings,
+# they are not part of the public-facing repo content.
+docs/AUDIT-*.md
