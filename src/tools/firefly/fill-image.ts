@@ -12,6 +12,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { imageRefSchema } from "../../schemas/image-ref.js";
 import { resolveImageRef } from "../../util/storage-refs.js";
 import { mapSdkError, toolError } from "../../util/errors.js";
+import { inlineImagesFromOutputs } from "../../util/inline-images.js";
 import { logger } from "../../util/logger.js";
 
 const inputSchema = {
@@ -93,39 +94,27 @@ export function registerFillImage(server: McpServer, client: FireflyClient): voi
         const res = await client.fillImage(requestBody);
         const result = res.result;
         const outputs = result.outputs ?? [];
+        const empty = outputs.length === 0;
 
-        const summary = {
-          ok: true,
+        const summary: Record<string, unknown> = {
+          ok: !empty,
           variations: outputs.length,
           size: result.size,
           outputs: outputs.map((o) => ({ seed: o.seed, url: o.image?.url })),
         };
+        if (empty) {
+          summary.reason = "empty_result";
+          summary.message =
+            "Firefly returned no filled images. The API call succeeded but produced an empty outputs array (may be due to content-safety rejection or a transient backend issue).";
+        }
 
         const content: CallToolResult["content"] = [
           { type: "text", text: JSON.stringify(summary, null, 2) },
         ];
 
         if (args.return_inline_image) {
-          for (const output of outputs) {
-            const url = output.image?.url;
-            if (!url) continue;
-            try {
-              const imgRes = await fetch(url);
-              if (!imgRes.ok) {
-                logger.warn({ url, status: imgRes.status }, "failed to inline generated image");
-                continue;
-              }
-              const buf = Buffer.from(await imgRes.arrayBuffer());
-              const mime = imgRes.headers.get("content-type") ?? "image/png";
-              content.push({
-                type: "image",
-                data: buf.toString("base64"),
-                mimeType: mime,
-              });
-            } catch (fetchErr) {
-              logger.warn({ url, err: (fetchErr as Error).message }, "error fetching generated image");
-            }
-          }
+          const imageBlocks = await inlineImagesFromOutputs(outputs);
+          content.push(...imageBlocks);
         }
 
         return { content };

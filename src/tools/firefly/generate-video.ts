@@ -227,6 +227,23 @@ export function registerGenerateVideo(server: McpServer, client: FireflyClient):
         const res = await client.generateVideoV3(requestBody, { xModelVersion: "video1_standard" });
         const result = res.result;
 
+        // Fail closed if the Firefly response is missing the fields the LLM
+        // needs to follow up on the async job. Returning ok: true with
+        // statusUrl: undefined would mislead the caller into a polling loop
+        // they can never satisfy.
+        if (!result.jobId || !result.statusUrl) {
+          return toolError({
+            code: "INCOMPLETE_RESPONSE",
+            message:
+              "Firefly accepted the video generation request but did not return a jobId or statusUrl. Cannot track the async job.",
+            details: {
+              hasJobId: Boolean(result.jobId),
+              hasStatusUrl: Boolean(result.statusUrl),
+              hasCancelUrl: Boolean(result.cancelUrl),
+            },
+          });
+        }
+
         const summary = {
           ok: true,
           async: true,

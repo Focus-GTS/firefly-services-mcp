@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StorageType } from "@adobe/photoshop-apis";
 import { registerSmartObjectReplace } from "../../../src/tools/photoshop/smart-object-replace.js";
 import type { PhotoshopClient } from "@adobe/photoshop-apis";
+import { callTool } from "../../util/call-tool.js";
 
 function makeServerAndClient(replaceImpl?: (req: unknown) => Promise<unknown>) {
   const server = new McpServer({ name: "test", version: "0.0.0" });
@@ -18,16 +20,6 @@ function makeServerAndClient(replaceImpl?: (req: unknown) => Promise<unknown>) {
     ),
   } as unknown as PhotoshopClient;
   return { server, client };
-}
-
-async function callTool(server: McpServer, name: string, args: Record<string, unknown>) {
-  const tool = (
-    server as unknown as {
-      _registeredTools: Record<string, { handler: (a: unknown, extra: unknown) => Promise<unknown> }>;
-    }
-  )._registeredTools[name];
-  if (!tool) throw new Error(`Tool ${name} not registered`);
-  return tool.handler(args, {});
 }
 
 describe("photoshop_smart_object_replace", () => {
@@ -64,7 +56,7 @@ describe("photoshop_smart_object_replace", () => {
       options: { layers: Array<{ name?: string; input: { href: string; storage: string } }> };
     };
     expect(call.inputs[0]!.href).toBe("https://in.example/template.psd");
-    expect(call.inputs[0]!.storage).toBe("external");
+    expect(call.inputs[0]!.storage).toBe(StorageType.EXTERNAL);
     expect(call.outputs[0]!.type).toBe("image/jpeg");
     expect(call.options.layers[0]!.name).toBe("Hero");
     expect(call.options.layers[0]!.input.href).toBe("https://in.example/new.jpg");

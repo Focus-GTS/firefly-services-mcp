@@ -37,8 +37,8 @@ If this returns a token preview, you're ready. If it errors, re-check the creden
 ### 2. Install the MCP server in Claude Code
 
 ```bash
-# Local-source install (during development):
-claude mcp add firefly-services -- npx tsx /Users/davefox/Code/Firefly/firefly-services-mcp/src/server.ts
+# Local-source install (during development; run from the repo root):
+claude mcp add firefly-services -- npx tsx "$(pwd)/src/server.ts"
 
 # Once published to npm:
 claude mcp add firefly-services -- npx @focusgts/firefly-services-mcp
@@ -206,7 +206,7 @@ Each prompt below shows: (a) what you ask Claude, (b) what Claude does behind th
 
 ## Closing — what to say at the end
 
-> "Eighteen tools across Firefly, Photoshop, and Lightroom. Open-source, Apache-2.0. Installs in one command. Built off Adobe's official SDKs, validated against the OpenAPI specs they ship. This is the canonical MCP for Firefly Services — first-party-quality, partner-built. The skills repo has 17 companion playbooks covering the workflows. Both live under github.com/focusgts."
+> "Eighteen tools across Firefly, Photoshop, and Lightroom. Open-source, Apache-2.0. Installs in one command. Built off Adobe's official SDKs, validated against the OpenAPI specs they ship. This is the most complete community MCP server for Firefly Services — a production-grade community implementation, partner-built. The companion [`firefly-services-skills`](https://github.com/focusgts/firefly-services-skills/blob/main/plugins/firefly-services/skills/firefly-skills-catalog/SKILL.md) repo carries the playbooks covering the workflows. Both live under github.com/focusgts."
 
 ---
 
@@ -216,7 +216,7 @@ Each prompt below shows: (a) what you ask Claude, (b) what Claude does behind th
 |---|---|
 | *Did Adobe build this?* | "No, we built it. FocusGTS is a Silver Solution Partner; this is community-contribution work under Apache-2.0. Not officially endorsed by Adobe." |
 | *Why isn't it on adobe/skills?* | "We'd love it to be. The repo is open for adoption / upstream contribution if Adobe wants to take it on or co-brand." |
-| *What's the rate limit?* | "Whatever your IMS org is provisioned for — the MCP server doesn't add its own limit. Partner-dev sandboxes get 3,000 ops/year; production tenants get whatever they've contracted for. The `firefly-services-rate-limits` skill in our companion repo documents the architecture for high-volume workloads." |
+| *What's the rate limit?* | "Whatever your IMS org is provisioned for — the MCP server doesn't add its own limit. Default Firefly Services rate limits are conservative — low-volume, intended for development; for production volumes, contact your Adobe account team. The `firefly-services-rate-limits` skill in our companion repo documents the architecture for high-volume workloads." |
 | *Does this work with Claude Desktop / Cursor / other MCP clients?* | "Yes — it implements the standard MCP protocol. Any MCP-compatible client works. We've tested Claude Code most extensively." |
 | *Is the SDK call doing anything fancy?* | "No magic. The MCP server is a thin adapter — every tool wraps a single SDK method call. Adobe's SDK does the actual work. We add zod schema validation, structured error mapping, and the LLM-friendly inline-image response pattern." |
 | *What happens if Adobe ships their own MCP?* | "Great outcome. We'd merge upstream or co-brand. The Apache-2.0 license makes that trivial." |
@@ -229,7 +229,7 @@ Each prompt below shows: (a) what you ask Claude, (b) what Claude does behind th
 |---|---|
 | Auth 401 / 403 | "The sandbox just timed out a token — happens. Let me re-export the credentials." Restart Claude Code. |
 | Content-safety 422 (prompt rejected) | "Firefly has built-in IP safety — this prompt tripped a guardrail. Let me rephrase." Use a more generic prompt (the apple example is safe). |
-| 429 rate-limited | "Sandbox quota is light — partner-dev sandboxes are 3K ops/year. In production you'd negotiate higher. Let me try a different tool to keep moving." |
+| 429 rate-limited | "Default Firefly Services rate limits are conservative — low-volume, intended for development; for production volumes, contact your Adobe account team. Let me try a different tool to keep moving." |
 | Network / timeout | "Conference WiFi being conference WiFi. Let me switch to my hotspot." Have a pre-recorded fallback video ready. |
 | Generated image looks bad | "Firefly's image quality varies prompt-by-prompt — this is the model, not the integration. Let me generate two more variations." Just call `firefly_generate_image` again with the same prompt. |
 

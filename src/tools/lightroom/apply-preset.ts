@@ -11,10 +11,10 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   ImageFormatType,
+  StorageType,
   type ApplyPresetRequest,
   type LightroomClient,
 } from "@adobe/lightroom-apis";
-import { StorageType } from "@adobe/lightroom-apis/dist/src/models/StorageType.js";
 import { mapSdkError, toolError } from "../../util/errors.js";
 import { logger } from "../../util/logger.js";
 

@@ -8,6 +8,7 @@ function makeServerAndCache(token = "fake-token-12345") {
   const tokenCache = {
     getToken: vi.fn(async () => token),
     status: vi.fn(() => ({ hasToken: true, expiresAt: Date.now() + 3_600_000, expiresInSec: 3600 })),
+    invalidate: vi.fn(),
   } as unknown as TokenCache;
   return { server, tokenCache };
 }
@@ -39,7 +40,7 @@ describe("firefly_check_auth", () => {
     const parsed = JSON.parse(res.content[0]!.text);
     expect(parsed.ok).toBe(true);
     expect(parsed.hasToken).toBe(true);
-    expect(parsed.tokenPreview).toMatch(/^[a-z]{12}\.\.\.[a-z]{8}$/);
+    expect(parsed.tokenPreview).toMatch(/^[a-z]{6}\.\.\.[a-z]{4}$/);
   });
 
   it("propagates token-cache errors as structured tool errors", async () => {
@@ -49,6 +50,7 @@ describe("firefly_check_auth", () => {
         throw new Error("IMS rejected credentials");
       }),
       status: vi.fn(() => ({ hasToken: false, expiresAt: null, expiresInSec: null })),
+      invalidate: vi.fn(),
     } as unknown as TokenCache;
     registerCheckAuth(server, tokenCache);
     const res = (await callTool(server, "firefly_check_auth", { force_refresh: false })) as {
@@ -58,5 +60,28 @@ describe("firefly_check_auth", () => {
     expect(res.isError).toBe(true);
     const parsed = JSON.parse(res.content[0]!.text);
     expect(parsed.message).toContain("IMS rejected credentials");
+  });
+
+  it("invalidates the cache before fetching when force_refresh=true", async () => {
+    const { server, tokenCache } = makeServerAndCache("abcdefghijklmnopqrstuvwxyz");
+    registerCheckAuth(server, tokenCache);
+    const res = (await callTool(server, "firefly_check_auth", { force_refresh: true })) as {
+      content: Array<{ type: string; text: string }>;
+    };
+    expect(tokenCache.invalidate).toHaveBeenCalledTimes(1);
+    expect(tokenCache.getToken).toHaveBeenCalledTimes(1);
+    // invalidate must run before getToken
+    const invalidateOrder = (tokenCache.invalidate as ReturnType<typeof vi.fn>).mock.invocationCallOrder[0]!;
+    const getTokenOrder = (tokenCache.getToken as ReturnType<typeof vi.fn>).mock.invocationCallOrder[0]!;
+    expect(invalidateOrder).toBeLessThan(getTokenOrder);
+    const parsed = JSON.parse(res.content[0]!.text);
+    expect(parsed.ok).toBe(true);
+  });
+
+  it("does NOT invalidate the cache when force_refresh=false", async () => {
+    const { server, tokenCache } = makeServerAndCache();
+    registerCheckAuth(server, tokenCache);
+    await callTool(server, "firefly_check_auth", { force_refresh: false });
+    expect(tokenCache.invalidate).not.toHaveBeenCalled();
   });
 });

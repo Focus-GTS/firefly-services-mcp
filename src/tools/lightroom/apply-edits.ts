@@ -15,12 +15,12 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   ImageFormatType,
+  StorageType,
+  WhiteBalance,
   type ApplyEditsRequest,
   type EditOptions,
   type LightroomClient,
 } from "@adobe/lightroom-apis";
-import { StorageType } from "@adobe/lightroom-apis/dist/src/models/StorageType.js";
-import { WhiteBalance } from "@adobe/lightroom-apis/dist/src/models/WhiteBalance.js";
 import { mapSdkError, toolError } from "../../util/errors.js";
 import { logger } from "../../util/logger.js";
 

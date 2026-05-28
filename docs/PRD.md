@@ -42,7 +42,7 @@ FocusGTS operates a forward-deployed engineering practice working on Adobe Firef
 | Independent AI developers | Build apps that combine an LLM agent with Firefly generation | One-off |
 | Adobe FDE leadership | Demo to internal stakeholders to show partner-ecosystem AI tooling | One-off, then occasional |
 
-v0.1 success is *not* "high install counts." It is **strategic positioning**: Adobe DevRel referencing this MCP server as the canonical Firefly artifact for Claude users.
+v0.1 success is *not* "high install counts." It is **strategic positioning**: Adobe DevRel referencing this MCP server as the most complete community Firefly artifact for Claude users.
 
 ## 5. Functional requirements — the tools
 
@@ -181,7 +181,7 @@ Four layers, from cheap to expensive.
   - **D1 — Single image generation:** Claude generates an image from a prompt
   - **D2 — Image-to-image pipeline:** Claude takes a source image, expands it, fills a region, returns the result (validates multi-tool storage-ref flow)
   - **D3 — PSD template assembly:** Claude takes a template + a Firefly-generated hero + brand text, runs Photoshop API smart-object replacement and text edit, returns the rendered JPEG (validates cross-API integration)
-- D3 is the canonical demo; it must look effortless
+- D3 is the headline demo; it must look effortless
 
 ## 11. Release plan
 
@@ -223,7 +223,7 @@ T = the day we kick off the build.
 
 ## References
 
-- [`firefly-services-skills`](https://github.com/focusgts/firefly-services-skills) — companion skills repo with 13 Claude Code skills for Firefly Services
+- [`firefly-services-skills`](https://github.com/focusgts/firefly-services-skills) — companion skills repo; see the auto-updating [skills catalog](https://github.com/focusgts/firefly-services-skills/blob/main/plugins/firefly-services/skills/firefly-skills-catalog/SKILL.md) for the current index
 - [Adobe Firefly Services documentation](https://developer.adobe.com/firefly-services/docs/)
 - [MCP specification](https://modelcontextprotocol.io/docs/specification/)
 - All five ADRs in [`docs/adrs/`](adrs/000-index.md)

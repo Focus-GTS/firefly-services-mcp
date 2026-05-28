@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { MaskFormatType } from "@adobe/photoshop-apis";
 import { registerRemoveBackground } from "../../../src/tools/photoshop/remove-background.js";
 import type { PhotoshopClient } from "@adobe/photoshop-apis";
+import { callTool } from "../../util/call-tool.js";
 
 function makeServerAndClient(impl?: (req: unknown) => Promise<unknown>) {
   const server = new McpServer({ name: "test", version: "0.0.0" });
@@ -19,16 +21,6 @@ function makeServerAndClient(impl?: (req: unknown) => Promise<unknown>) {
     ),
   } as unknown as PhotoshopClient;
   return { server, client };
-}
-
-async function callTool(server: McpServer, name: string, args: Record<string, unknown>) {
-  const tool = (
-    server as unknown as {
-      _registeredTools: Record<string, { handler: (a: unknown, extra: unknown) => Promise<unknown> }>;
-    }
-  )._registeredTools[name];
-  if (!tool) throw new Error(`Tool ${name} not registered`);
-  return tool.handler(args, {});
 }
 
 describe("photoshop_remove_background", () => {
@@ -71,7 +63,7 @@ describe("photoshop_remove_background", () => {
     const call = (client.removeBackground as ReturnType<typeof vi.fn>).mock.calls[0]![0] as {
       output: { mask?: { format?: string } };
     };
-    expect(call.output.mask?.format).toBe("soft");
+    expect(call.output.mask?.format).toBe(MaskFormatType.SOFT);
   });
 
   it("maps SDK errors", async () => {

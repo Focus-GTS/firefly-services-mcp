@@ -8,45 +8,18 @@
  */
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import {
-  type PhotoshopClient,
-  StorageType,
-  ImageFormatType,
-} from "@adobe/photoshop-apis";
+import type { PhotoshopClient } from "@adobe/photoshop-apis";
 import { mapSdkError, toolError } from "../../util/errors.js";
 import { logger } from "../../util/logger.js";
+import {
+  PHOTOSHOP_OUTPUT_FORMATS,
+  PHOTOSHOP_STORAGE_VALUES,
+  toImageFormat,
+  toStorageType,
+} from "../../util/photoshop-enums.js";
 
-const STORAGE_VALUES = ["external", "azure", "dropbox"] as const;
-const OUTPUT_FORMATS = [
-  "image/jpeg",
-  "image/png",
-  "image/tiff",
-  "image/vnd.adobe.photoshop",
-] as const;
-
-function toStorageType(s: (typeof STORAGE_VALUES)[number]): StorageType {
-  switch (s) {
-    case "external":
-      return StorageType.EXTERNAL;
-    case "azure":
-      return StorageType.AZURE;
-    case "dropbox":
-      return StorageType.DROPBOX;
-  }
-}
-
-function toImageFormat(s: (typeof OUTPUT_FORMATS)[number]): ImageFormatType {
-  switch (s) {
-    case "image/jpeg":
-      return ImageFormatType.IMAGE_JPEG;
-    case "image/png":
-      return ImageFormatType.IMAGE_PNG;
-    case "image/tiff":
-      return ImageFormatType.IMAGE_TIFF;
-    case "image/vnd.adobe.photoshop":
-      return ImageFormatType.IMAGE_VND_ADOBE_PHOTOSHOP;
-  }
-}
+const STORAGE_VALUES = PHOTOSHOP_STORAGE_VALUES;
+const OUTPUT_FORMATS = PHOTOSHOP_OUTPUT_FORMATS;
 
 const inputSchema = {
   input_url: z

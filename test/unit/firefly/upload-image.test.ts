@@ -21,20 +21,36 @@ function makeClient(uploadResult: unknown = { result: { images: [{ id: "upload-a
 }
 
 let tmpFiles: string[] = [];
+let originalUploadRoot: string | undefined;
 
 async function makeTempFile(ext: string, bytes = Buffer.from([0x89, 0x50, 0x4e, 0x47])): Promise<string> {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "ff-upload-test-"));
+  // Each temp dir is realpath'd to handle macOS /var → /private/var symlinks
+  // when matched against the FIREFLY_SERVICES_UPLOAD_ROOT we set below.
+  const dir = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "ff-upload-test-")));
   const file = path.join(dir, `tiny${ext}`);
   await fs.writeFile(file, bytes);
   tmpFiles.push(dir);
   return file;
 }
 
+beforeEach(async () => {
+  // Path-guard policy requires uploaded files to live under
+  // FIREFLY_SERVICES_UPLOAD_ROOT. For tests, point that at the system tmpdir
+  // (realpath'd so we match the post-symlink path on macOS).
+  originalUploadRoot = process.env.FIREFLY_SERVICES_UPLOAD_ROOT;
+  process.env.FIREFLY_SERVICES_UPLOAD_ROOT = await fs.realpath(os.tmpdir());
+});
+
 afterEach(async () => {
   for (const dir of tmpFiles) {
     await fs.rm(dir, { recursive: true, force: true });
   }
   tmpFiles = [];
+  if (originalUploadRoot === undefined) {
+    delete process.env.FIREFLY_SERVICES_UPLOAD_ROOT;
+  } else {
+    process.env.FIREFLY_SERVICES_UPLOAD_ROOT = originalUploadRoot;
+  }
 });
 
 describe("firefly_upload_image", () => {

@@ -100,4 +100,23 @@ describe("firefly_generate_object_composite", () => {
     const parsed = JSON.parse(res.content[0]!.text);
     expect(parsed.message).toContain("composite failed");
   });
+
+  // Audit Critical (test agent #2): empty outputs is not silent success.
+  it("flags empty outputs with ok=false and a reason", async () => {
+    const server = new McpServer({ name: "test", version: "0.0.0" });
+    const client = makeClient({
+      result: { size: { width: 1024, height: 1024 }, contentClass: "photo", outputs: [] },
+    });
+    registerGenerateObjectComposite(server, client);
+    const res = (await callTool(server, "firefly_generate_object_composite", {
+      image: { uploadId: "x" },
+      prompt: "in an empty room",
+      return_inline_image: false,
+    })) as { isError?: boolean; content: Array<{ type: string; text: string }> };
+    expect(res.isError).toBeFalsy();
+    const parsed = JSON.parse(res.content[0]!.text);
+    expect(parsed.ok).toBe(false);
+    expect(parsed.variations).toBe(0);
+    expect(parsed.reason).toBe("empty_result");
+  });
 });

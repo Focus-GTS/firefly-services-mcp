@@ -134,4 +134,33 @@ describe("firefly_generate_image", () => {
     const parsed = JSON.parse(res.content[0]!.text);
     expect(parsed.message).toContain("Adobe IMS failure");
   });
+
+  // Audit Critical (test agent #2): Firefly can return 200 + an empty
+  // outputs array when the prompt is denied by content safety. The tool
+  // must surface this clearly rather than silently reporting success.
+  it("flags content-safety rejection when Firefly returns empty outputs + denied words", async () => {
+    const server = new McpServer({ name: "test", version: "0.0.0" });
+    const client = makeClient({
+      result: {
+        size: { width: 1024, height: 1024 },
+        outputs: [],
+        promptHasDeniedWords: true,
+        promptHasBlockedArtists: false,
+      },
+    });
+    registerGenerateImage(server, client);
+    const res = (await callTool(server, "firefly_generate_image", {
+      prompt: "something refused",
+      return_inline_image: false,
+    })) as { isError?: boolean; content: Array<{ type: string; text: string }> };
+    // The HTTP call succeeded so we don't mark this as a protocol-level
+    // error; instead we flip ok=false and include a reason the LLM can act on.
+    expect(res.isError).toBeFalsy();
+    const parsed = JSON.parse(res.content[0]!.text);
+    expect(parsed.ok).toBe(false);
+    expect(parsed.variations).toBe(0);
+    expect(parsed.reason).toBe("content_safety_rejected");
+    expect(parsed.message).toMatch(/content safety|denied words|blocked artists/i);
+    expect(parsed.promptHasDeniedWords).toBe(true);
+  });
 });

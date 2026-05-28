@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StorageType } from "@adobe/photoshop-apis";
 import { registerApplyActions } from "../../../src/tools/photoshop/apply-actions.js";
 import type { PhotoshopClient } from "@adobe/photoshop-apis";
+import { callTool } from "../../util/call-tool.js";
 
 function makeServerAndClient(impl?: (req: unknown) => Promise<unknown>) {
   const server = new McpServer({ name: "test", version: "0.0.0" });
@@ -18,16 +20,6 @@ function makeServerAndClient(impl?: (req: unknown) => Promise<unknown>) {
     ),
   } as unknown as PhotoshopClient;
   return { server, client };
-}
-
-async function callTool(server: McpServer, name: string, args: Record<string, unknown>) {
-  const tool = (
-    server as unknown as {
-      _registeredTools: Record<string, { handler: (a: unknown, extra: unknown) => Promise<unknown> }>;
-    }
-  )._registeredTools[name];
-  if (!tool) throw new Error(`Tool ${name} not registered`);
-  return tool.handler(args, {});
 }
 
 describe("photoshop_apply_actions", () => {
@@ -86,5 +78,27 @@ describe("photoshop_apply_actions", () => {
     expect(res.isError).toBe(true);
     const parsed = JSON.parse(res.content[0]!.text);
     expect(parsed.message).toContain("action file invalid");
+  });
+
+  // Regression test for the audit's "tests bypass zod" finding: when storage
+  // is omitted, the inputSchema's .default("external") must apply, and the
+  // mapper must translate that to StorageType.EXTERNAL — not silently pass
+  // `undefined` to the SDK as the old switch (no default arm) used to.
+  it("applies the 'external' storage default when storage fields are omitted", async () => {
+    const { server, client } = makeServerAndClient();
+    registerApplyActions(server, client);
+    await callTool(server, "photoshop_apply_actions", {
+      input_url: "https://in.example/source.jpg",
+      action_url: "https://in.example/brand.atn",
+      output_url: "https://out.example/processed.jpg",
+    });
+    const body = (client.playPhotoshopActions as ReturnType<typeof vi.fn>).mock.calls[0]![0] as {
+      inputs: Array<{ storage: string }>;
+      outputs: Array<{ storage: string }>;
+      options: { actions: Array<{ storage: string }> };
+    };
+    expect(body.inputs[0]!.storage).toBe(StorageType.EXTERNAL);
+    expect(body.outputs[0]!.storage).toBe(StorageType.EXTERNAL);
+    expect(body.options.actions[0]!.storage).toBe(StorageType.EXTERNAL);
   });
 });

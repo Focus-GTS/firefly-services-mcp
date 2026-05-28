@@ -26,7 +26,22 @@ If your organization is an Adobe Solution Partner at Silver tier or higher:
 2. Browse to **Sandbox Services and Add-Ons** → find **Firefly Services**
 3. Add to cart → checkout (it's $0 for partners at eligible tiers)
 4. Wait ~5 business days for provisioning email
-5. Once provisioned, sign in to the new sandbox's Admin Console → Add Firefly Services as a product → Open Developer Console → Create OAuth Server-to-Server credentials → copy `client_id` and `client_secret`
+5. Once provisioned, sign in to the new sandbox's Admin Console → Add Firefly Services as a product
+6. **Add yourself as a Developer on the Firefly Services product** (see sub-step below — easy to miss)
+7. Open Developer Console → Create OAuth Server-to-Server credentials → copy `client_id` and `client_secret`
+
+**Step A.6 — Add yourself as a developer on the Firefly Services product**
+
+Before you can create OAuth credentials, the Admin Console requires you
+to be added as a Developer on the relevant product:
+
+1. Admin Console → Products → click **Firefly Services**
+2. Click the **Developers** tab (next to Users / Admins)
+3. Click **Add Developer**
+4. Search for your own email, select yourself, click **Save**
+
+You should now see your name in the Developers list. Without this step,
+the next section's "Create credentials" button will be missing or disabled.
 
 ### Path B — Customer engagement (if you're an FDE consultant)
 
@@ -129,6 +144,26 @@ Claude will call `firefly_generate_image` and the generated image will appear in
 
 ## Troubleshooting
 
+### "0 tools showing in /mcp" on macOS
+
+By far the most common cause: you launched Claude Code from Spotlight,
+the Dock, or Finder. On macOS, GUI-launched apps do NOT inherit shell
+environment variables set in `.zshrc` / `.bashrc`. The MCP subprocess
+then has no `FIREFLY_SERVICES_CLIENT_ID` and exits silently.
+
+Fix: quit Claude Code completely, then re-launch it from the same
+terminal where you exported the credentials:
+
+```bash
+export FIREFLY_SERVICES_CLIENT_ID=<...>
+export FIREFLY_SERVICES_CLIENT_SECRET=<...>
+open -a "Claude Code"   # inherits env from this shell
+```
+
+Alternative: pass the env vars directly to `claude mcp add` via `--env`
+flags. See [`install-claude-code.sh`](./install-claude-code.sh) for a
+reference pattern.
+
 ### "0 tools" or "connection failed" in `/mcp`
 
 The server failed to start. Common causes:
@@ -148,7 +183,7 @@ Firefly's content-safety filter may be rejecting the prompt silently. Rephrase t
 
 ### Tool calls hit 429 (rate-limited)
 
-Default Firefly Services rate limit is ~4 RPM per credential. For development testing this is usually fine. For higher volumes, contact your Adobe account team about provisioning a higher limit.
+Default Firefly Services rate limits are conservative; for production volumes, contact your Adobe account team about provisioning a higher limit.
 
 ### Generated images don't show inline
 
@@ -185,6 +220,6 @@ Restart Claude Code after updating to pick up the new server version.
 ## Where to go next
 
 - [Demo script](./demo.md) — guided 12-minute walkthrough showing 5 representative workflows
-- [Companion skills repo](https://github.com/focusgts/firefly-services-skills) — 17 Claude Code skills documenting the Firefly Services workflow patterns
+- [Companion skills repo](https://github.com/focusgts/firefly-services-skills) — the companion `firefly-services-skills` repo documents the Firefly Services workflow patterns; see the auto-updating [skills catalog](https://github.com/focusgts/firefly-services-skills/blob/main/plugins/firefly-services/skills/firefly-skills-catalog/SKILL.md) for the current index
 - [Adobe Firefly Services developer docs](https://developer.adobe.com/firefly-services/docs/) — official Adobe documentation
 - [GitHub issues](https://github.com/focusgts/firefly-services-mcp/issues) — report bugs, request features, ask questions

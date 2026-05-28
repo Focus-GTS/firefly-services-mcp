@@ -104,4 +104,22 @@ describe("firefly_generate_video", () => {
     const parsed = JSON.parse(res.content[0]!.text);
     expect(parsed.message).toContain("video API down");
   });
+
+  // Audit Warning (test agent #3): if Firefly accepts the request but
+  // returns a result missing jobId / statusUrl, fail closed instead of
+  // returning ok: true with statusUrl: undefined.
+  it("fails closed when the result is missing jobId / statusUrl", async () => {
+    const server = new McpServer({ name: "test", version: "0.0.0" });
+    const client = makeClient({ result: {} });
+    registerGenerateVideo(server, client);
+    const res = (await callTool(server, "firefly_generate_video", {
+      prompt: "moving train",
+    })) as { isError?: boolean; content: Array<{ type: string; text: string }> };
+    expect(res.isError).toBe(true);
+    const parsed = JSON.parse(res.content[0]!.text);
+    expect(parsed.code).toBe("INCOMPLETE_RESPONSE");
+    expect(parsed.message).toMatch(/jobId|statusUrl/);
+    expect(parsed.details.hasJobId).toBe(false);
+    expect(parsed.details.hasStatusUrl).toBe(false);
+  });
 });

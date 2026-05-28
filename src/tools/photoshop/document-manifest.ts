@@ -10,24 +10,17 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
+  ThumbnailType,
   type PhotoshopClient,
-  StorageType,
 } from "@adobe/photoshop-apis";
 import { mapSdkError, toolError } from "../../util/errors.js";
 import { logger } from "../../util/logger.js";
+import {
+  PHOTOSHOP_STORAGE_VALUES,
+  toStorageType,
+} from "../../util/photoshop-enums.js";
 
-const STORAGE_VALUES = ["external", "azure", "dropbox"] as const;
-
-function toStorageType(s: (typeof STORAGE_VALUES)[number]): StorageType {
-  switch (s) {
-    case "external":
-      return StorageType.EXTERNAL;
-    case "azure":
-      return StorageType.AZURE;
-    case "dropbox":
-      return StorageType.DROPBOX;
-  }
-}
+const STORAGE_VALUES = PHOTOSHOP_STORAGE_VALUES;
 
 const inputSchema = {
   input_url: z
@@ -64,9 +57,6 @@ export function registerDocumentManifest(
     },
     async (args) => {
       try {
-        // ThumbnailType is an enum in the SDK; we pass its string value via cast
-        // rather than deep-importing the enum, which is not exposed at the
-        // package's top-level export surface.
         const requestBody = {
           inputs: [
             {
@@ -75,7 +65,7 @@ export function registerDocumentManifest(
             },
           ],
           ...(args.include_thumbnails
-            ? { options: { thumbnails: { type: "image/png" } } as unknown as never }
+            ? { options: { thumbnails: { type: ThumbnailType.IMAGE_PNG } } }
             : {}),
         };
 

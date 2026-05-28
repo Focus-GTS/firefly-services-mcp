@@ -94,4 +94,20 @@ describe("firefly_expand_image", () => {
     const parsed = JSON.parse(res.content[0]!.text);
     expect(parsed.message).toContain("expand failed");
   });
+
+  // Audit Critical (test agent #2): empty outputs is not silent success.
+  it("flags empty outputs with ok=false and a reason", async () => {
+    const server = new McpServer({ name: "test", version: "0.0.0" });
+    const client = makeClient({ result: { size: { width: 1024, height: 1024 }, outputs: [] } });
+    registerExpandImage(server, client);
+    const res = (await callTool(server, "firefly_expand_image", {
+      image: { uploadId: "x" },
+      return_inline_image: false,
+    })) as { isError?: boolean; content: Array<{ type: string; text: string }> };
+    expect(res.isError).toBeFalsy();
+    const parsed = JSON.parse(res.content[0]!.text);
+    expect(parsed.ok).toBe(false);
+    expect(parsed.variations).toBe(0);
+    expect(parsed.reason).toBe("empty_result");
+  });
 });

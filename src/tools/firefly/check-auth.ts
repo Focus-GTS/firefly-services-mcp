@@ -31,12 +31,11 @@ export function registerCheckAuth(server: McpServer, tokenCache: TokenCache): vo
     async ({ force_refresh }) => {
       try {
         if (force_refresh) {
-          // Bypass the cache by reaching into the cache's state.
-          // Simpler approach: just call getToken twice with an artificial expiry-zero in between.
-          // For v0.0.1 we accept that "force_refresh" effectively means "call getToken normally"
-          // since the cache already refreshes when needed. A future patch can expose an explicit
-          // invalidate() method on TokenCache.
-          logger.debug("force_refresh requested (no-op in v0.0.1; will refresh on next natural cycle)");
+          // Drop the cached token so the next getToken() hits IMS.
+          // Useful as a debugging tool when credentials have been rotated
+          // or a token is suspected of being server-side revoked.
+          logger.debug("force_refresh requested — invalidating cached token");
+          tokenCache.invalidate();
         }
 
         const token = await tokenCache.getToken();
@@ -50,7 +49,7 @@ export function registerCheckAuth(server: McpServer, tokenCache: TokenCache): vo
                 {
                   ok: true,
                   hasToken: true,
-                  tokenPreview: `${token.slice(0, 12)}...${token.slice(-8)}`,
+                  tokenPreview: `${token.slice(0, 6)}...${token.slice(-4)}`,
                   expiresAt: status.expiresAt ? new Date(status.expiresAt).toISOString() : null,
                   expiresInSec: status.expiresInSec,
                   message: "Credentials valid. IMS token acquired or reused from cache.",

@@ -9,24 +9,22 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
+  MaskFormatType,
   type PhotoshopClient,
-  StorageType,
 } from "@adobe/photoshop-apis";
 import { mapSdkError, toolError } from "../../util/errors.js";
 import { logger } from "../../util/logger.js";
+import {
+  PHOTOSHOP_STORAGE_VALUES,
+  toStorageType,
+} from "../../util/photoshop-enums.js";
 
-const STORAGE_VALUES = ["external", "azure", "dropbox"] as const;
-
-function toStorageType(s: (typeof STORAGE_VALUES)[number]): StorageType {
-  switch (s) {
-    case "external":
-      return StorageType.EXTERNAL;
-    case "azure":
-      return StorageType.AZURE;
-    case "dropbox":
-      return StorageType.DROPBOX;
-  }
-}
+const STORAGE_VALUES = PHOTOSHOP_STORAGE_VALUES;
+const MASK_FORMATS = ["soft", "binary"] as const;
+const MASK_FORMAT_MAP: Record<(typeof MASK_FORMATS)[number], MaskFormatType> = {
+  soft: MaskFormatType.SOFT,
+  binary: MaskFormatType.BINARY,
+};
 
 const inputSchema = {
   input_url: z
@@ -50,7 +48,7 @@ const inputSchema = {
     .default("external")
     .describe("Storage backend that will receive the output. Defaults to 'external'."),
   mask_format: z
-    .enum(["soft", "binary"])
+    .enum(MASK_FORMATS)
     .optional()
     .describe(
       "Optional mask format. 'soft' produces a feathered alpha mask (best for hair, fur). 'binary' produces a hard cutout. Omit to let Sensei decide.",
@@ -71,9 +69,6 @@ export function registerRemoveBackground(
     },
     async (args) => {
       try {
-        // MaskFormatType is an enum in the SDK ('soft' | 'binary'); we pass the
-        // literal string and cast since the enum is not exposed at the package's
-        // top-level export surface.
         const requestBody = {
           input: {
             href: args.input_url,
@@ -83,7 +78,7 @@ export function registerRemoveBackground(
             href: args.output_url,
             storage: toStorageType(args.output_storage),
             ...(args.mask_format
-              ? { mask: { format: args.mask_format as unknown as never } }
+              ? { mask: { format: MASK_FORMAT_MAP[args.mask_format] } }
               : {}),
           },
         };

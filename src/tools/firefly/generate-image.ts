@@ -10,8 +10,10 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { ContentClass, type FireflyClient } from "@adobe/firefly-apis";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { imageRefSchema } from "../../schemas/image-ref.js";
+import { IMAGE_SIZE_PRESETS, SIZE_BY_PRESET } from "../../schemas/size-presets.js";
 import { resolveImageRef } from "../../util/storage-refs.js";
 import { mapSdkError, toolError } from "../../util/errors.js";
+import { inlineImagesFromOutputs } from "../../util/inline-images.js";
 import { logger } from "../../util/logger.js";
 
 function toContentClass(s: "photo" | "art" | undefined): ContentClass | undefined {
@@ -19,29 +21,6 @@ function toContentClass(s: "photo" | "art" | undefined): ContentClass | undefine
   if (s === "art") return ContentClass.ART;
   return undefined;
 }
-
-// Supported sizes per the SDK's GenerateImagesRequest documentation.
-const SIZE_PRESETS = [
-  "square_1024",
-  "square_2048",
-  "landscape_2304x1792",
-  "portrait_1792x2304",
-  "widescreen_2688x1536",
-  "landscape_1344x768",
-  "landscape_1152x896",
-  "portrait_896x1152",
-] as const;
-
-const SIZE_BY_PRESET: Record<(typeof SIZE_PRESETS)[number], { width: number; height: number }> = {
-  square_1024: { width: 1024, height: 1024 },
-  square_2048: { width: 2048, height: 2048 },
-  landscape_2304x1792: { width: 2304, height: 1792 },
-  portrait_1792x2304: { width: 1792, height: 2304 },
-  widescreen_2688x1536: { width: 2688, height: 1536 },
-  landscape_1344x768: { width: 1344, height: 768 },
-  landscape_1152x896: { width: 1152, height: 896 },
-  portrait_896x1152: { width: 896, height: 1152 },
-};
 
 const inputSchema = {
   prompt: z
@@ -60,7 +39,7 @@ const inputSchema = {
     .default(1)
     .describe("Number of variations to generate. 1-4. Defaults to 1."),
   size: z
-    .enum(SIZE_PRESETS)
+    .enum(IMAGE_SIZE_PRESETS)
     .optional()
     .default("square_1024")
     .describe(
@@ -172,16 +151,32 @@ export function registerGenerateImage(server: McpServer, client: FireflyClient):
         const res = await client.generateImages(requestBody);
         const result = res.result;
         const outputs = result.outputs ?? [];
+        const deniedWords = result.promptHasDeniedWords ?? false;
+        const blockedArtists = result.promptHasBlockedArtists ?? false;
+        // Firefly returns 200 + an empty outputs array when the prompt is
+        // refused by content safety (denied words / blocked artists). Mark
+        // that case explicitly so the LLM sees the rejection rather than
+        // a silent "ok: true, variations: 0" success.
+        const contentSafetyRejected = outputs.length === 0 && (deniedWords || blockedArtists);
+        const empty = outputs.length === 0;
 
-        const summary = {
-          ok: true,
+        const summary: Record<string, unknown> = {
+          ok: !empty,
           variations: outputs.length,
           size: result.size,
           contentClass: result.contentClass,
-          promptHasDeniedWords: result.promptHasDeniedWords ?? false,
-          promptHasBlockedArtists: result.promptHasBlockedArtists ?? false,
+          promptHasDeniedWords: deniedWords,
+          promptHasBlockedArtists: blockedArtists,
           outputs: outputs.map((o) => ({ seed: o.seed, url: o.image?.url })),
         };
+        if (empty) {
+          summary.reason = contentSafetyRejected
+            ? "content_safety_rejected"
+            : "empty_result";
+          summary.message = contentSafetyRejected
+            ? "Firefly returned no images: the prompt was rejected by content safety (denied words and/or blocked artists). Revise the prompt and try again."
+            : "Firefly returned no images. The API call succeeded but produced an empty outputs array.";
+        }
 
         // Always include a JSON summary so Claude can reason about what came back.
         const content: CallToolResult["content"] = [
@@ -190,26 +185,8 @@ export function registerGenerateImage(server: McpServer, client: FireflyClient):
 
         // Optionally inline the image bytes so Claude can see the result.
         if (args.return_inline_image) {
-          for (const output of outputs) {
-            const url = output.image?.url;
-            if (!url) continue;
-            try {
-              const imgRes = await fetch(url);
-              if (!imgRes.ok) {
-                logger.warn({ url, status: imgRes.status }, "failed to inline generated image");
-                continue;
-              }
-              const buf = Buffer.from(await imgRes.arrayBuffer());
-              const mime = imgRes.headers.get("content-type") ?? "image/png";
-              content.push({
-                type: "image",
-                data: buf.toString("base64"),
-                mimeType: mime,
-              });
-            } catch (fetchErr) {
-              logger.warn({ url, err: (fetchErr as Error).message }, "error fetching generated image");
-            }
-          }
+          const imageBlocks = await inlineImagesFromOutputs(outputs);
+          content.push(...imageBlocks);
         }
 
         return { content };

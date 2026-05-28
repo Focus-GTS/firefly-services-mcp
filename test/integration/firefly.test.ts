@@ -113,9 +113,9 @@ describe("firefly_check_auth (integration: real TokenCache -> mocked IMS)", () =
     expect(parsed.hasToken).toBe(true);
     expect(parsed.expiresInSec).toBeGreaterThan(60_000);
     // The default IMS handler returns FAKE_IMS_TOKEN; tokenPreview is
-    // `${first12}...${last8}` of the access_token string.
+    // `${first6}...${last4}` of the access_token string (audit M1).
     expect(parsed.tokenPreview).toBe(
-      `${FAKE_IMS_TOKEN.slice(0, 12)}...${FAKE_IMS_TOKEN.slice(-8)}`,
+      `${FAKE_IMS_TOKEN.slice(0, 6)}...${FAKE_IMS_TOKEN.slice(-4)}`,
     );
   });
 
@@ -143,6 +143,29 @@ describe("firefly_check_auth (integration: real TokenCache -> mocked IMS)", () =
 });
 
 describe("firefly_upload_image (integration)", () => {
+  // The upload-image tool enforces a FIREFLY_SERVICES_UPLOAD_ROOT policy. For
+  // these tests we point it at the system tmpdir (realpath'd to handle macOS
+  // /var → /private/var symlink so the inside-root check matches the
+  // post-symlink path we write to).
+  let originalUploadRoot: string | undefined;
+  let uploadRoot = "";
+
+  beforeAll(async () => {
+    const fsp = await import("node:fs/promises");
+    const os = await import("node:os");
+    originalUploadRoot = process.env.FIREFLY_SERVICES_UPLOAD_ROOT;
+    uploadRoot = await fsp.realpath(os.tmpdir());
+    process.env.FIREFLY_SERVICES_UPLOAD_ROOT = uploadRoot;
+  });
+
+  afterAll(() => {
+    if (originalUploadRoot === undefined) {
+      delete process.env.FIREFLY_SERVICES_UPLOAD_ROOT;
+    } else {
+      process.env.FIREFLY_SERVICES_UPLOAD_ROOT = originalUploadRoot;
+    }
+  });
+
   it("POSTs to /v2/storage/image with the file bytes and parses the upload id", async () => {
     const captured: { request?: Request; body?: unknown } = {};
     server.use(
@@ -153,11 +176,10 @@ describe("firefly_upload_image (integration)", () => {
       }),
     );
 
-    // Use a real file on disk: any PNG in node_modules works. Pick package.json
-    // path — but we need a PNG/JPG. Write a temp PNG so we don't depend on
-    // arbitrary repo files.
-    const tmpPath = `/tmp/firefly-int-${Date.now()}.png`;
+    // Write a temp PNG inside the upload root so the path-guard accepts it.
+    const path = await import("node:path");
     const fs = await import("node:fs/promises");
+    const tmpPath = path.join(uploadRoot, `firefly-int-${Date.now()}.png`);
     await fs.writeFile(tmpPath, PNG_PIXEL_BYTES);
 
     const mcp = new McpServer({ name: "test", version: "0.0.0" });
@@ -192,8 +214,9 @@ describe("firefly_upload_image (integration)", () => {
       }),
     );
 
-    const tmpPath = `/tmp/firefly-int-empty-${Date.now()}.png`;
+    const path = await import("node:path");
     const fs = await import("node:fs/promises");
+    const tmpPath = path.join(uploadRoot, `firefly-int-empty-${Date.now()}.png`);
     await fs.writeFile(tmpPath, PNG_PIXEL_BYTES);
 
     const mcp = new McpServer({ name: "test", version: "0.0.0" });
