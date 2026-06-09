@@ -1,6 +1,6 @@
 {
   "name": "@focusgts/firefly-services-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Model Context Protocol server for Adobe Firefly Services — exposes Firefly, Photoshop API, and Lightroom API endpoints as MCP tools. Built by FocusGTS.",
   "type": "module",
   "main": "dist/server.js",

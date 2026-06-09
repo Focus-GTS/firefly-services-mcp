@@ -37,7 +37,7 @@ This is **not** an Adobe SDK and **not** a replacement for one. It is a thin MCP
 
 ## Install
 
-### Option 1 — From source (recommended during the v0.1.x cycle)
+### Option 1 — From source (for development)
 
 ```bash
 git clone https://github.com/Focus-GTS/firefly-services-mcp.git
@@ -54,15 +54,15 @@ For the development loop without a build step:
 claude mcp add firefly-services -- npx tsx "$(pwd)/src/server.ts"
 ```
 
-### Option 2 — From npm (preview, once published)
+### Option 2 — From npm (recommended)
 
-When the package is published to npm, install becomes one line:
+The package is published to npm, so install is one line:
 
 ```bash
 claude mcp add firefly-services -- npx @focusgts/firefly-services-mcp
 ```
 
-Track the publication status in `docs/PRD.md` §11.
+Published at [npmjs.com/package/@focusgts/firefly-services-mcp](https://www.npmjs.com/package/@focusgts/firefly-services-mcp).
 
 ### Required environment variables
 
@@ -71,7 +71,7 @@ export FIREFLY_SERVICES_CLIENT_ID=<your client id from Adobe Developer Console>
 export FIREFLY_SERVICES_CLIENT_SECRET=<your client secret>
 ```
 
-The credentials must be an **OAuth Server-to-Server** credential pair issued via the Adobe Developer Console with Firefly Services API access provisioned on the workspace. See [`examples/install-claude-code.md`](examples/install-claude-code.md) for the full credential-acquisition walkthrough or the [`firefly-services-bootstrap`](https://github.com/Focus-GTS/firefly-services-skills/blob/main/plugins/firefly-services/skills/firefly-services-bootstrap/SKILL.md) skill for the FDE-grade detail.
+The credentials must be an **OAuth Server-to-Server** credential pair issued via the Adobe Developer Console with Firefly Services API access provisioned on the workspace. See [`examples/install-claude-code.md`](https://github.com/Focus-GTS/firefly-services-mcp/blob/main/examples/install-claude-code.md) for the full credential-acquisition walkthrough or the [`firefly-services-bootstrap`](https://github.com/Focus-GTS/firefly-services-skills/blob/main/plugins/firefly-services/skills/firefly-services-bootstrap/SKILL.md) skill for the FDE-grade detail.
 
 ---
 
