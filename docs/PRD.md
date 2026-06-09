@@ -10,7 +10,7 @@
 
 Adobe shipped Model Context Protocol (MCP) support for AEM (2025) and the Adobe Express add-on docs (March 2026), but has not shipped an official MCP server for Firefly Services — the generative API surface that drives Adobe's most strategic AI revenue line. Developers using Claude Code, Cursor, or other MCP-compatible AI clients have no clean way to call Firefly Services from inside their AI workflows. The only public alternative is one independent developer's unofficial server with three tools and effectively no traction.
 
-FocusGTS operates a forward-deployed engineering practice working on Adobe Firefly Services at enterprise customer accounts. We ship the only public Claude Code skills for the platform — the [`firefly-services-skills`](https://github.com/focusgts/firefly-services-skills) repo — and this MCP server is the natural complement. Building it now fills the developer-tooling gap and lets FocusGTS contribute usefully at the platform-tooling layer of Adobe's developer ecosystem.
+FocusGTS operates a forward-deployed engineering practice working on Adobe Firefly Services at enterprise customer accounts. We ship the only public Claude Code skills for the platform — the [`firefly-services-skills`](https://github.com/Focus-GTS/firefly-services-skills) repo — and this MCP server is the natural complement. Building it now fills the developer-tooling gap and lets FocusGTS contribute usefully at the platform-tooling layer of Adobe's developer ecosystem.
 
 ## 2. Goals (v0.1)
 
@@ -223,7 +223,7 @@ T = the day we kick off the build.
 
 ## References
 
-- [`firefly-services-skills`](https://github.com/focusgts/firefly-services-skills) — companion skills repo; see the auto-updating [skills catalog](https://github.com/focusgts/firefly-services-skills/blob/main/plugins/firefly-services/skills/firefly-skills-catalog/SKILL.md) for the current index
+- [`firefly-services-skills`](https://github.com/Focus-GTS/firefly-services-skills) — companion skills repo; see the auto-updating [skills catalog](https://github.com/Focus-GTS/firefly-services-skills/blob/main/plugins/firefly-services/skills/firefly-skills-catalog/SKILL.md) for the current index
 - [Adobe Firefly Services documentation](https://developer.adobe.com/firefly-services/docs/)
 - [MCP specification](https://modelcontextprotocol.io/docs/specification/)
 - All five ADRs in [`docs/adrs/`](adrs/000-index.md)

@@ -1,7 +1,7 @@
 # Firefly Services MCP Server
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![CI](https://github.com/focusgts/firefly-services-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/focusgts/firefly-services-mcp/actions/workflows/ci.yml)
+[![CI](https://github.com/Focus-GTS/firefly-services-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/Focus-GTS/firefly-services-mcp/actions/workflows/ci.yml)
 [![Status](https://img.shields.io/badge/status-v0.1.0-green.svg)](#status)
 [![Tools](https://img.shields.io/badge/tools-18-blue.svg)](#tools-v01-surface--18-tools)
 
@@ -40,7 +40,7 @@ This is **not** an Adobe SDK and **not** a replacement for one. It is a thin MCP
 ### Option 1 — From source (recommended during the v0.1.x cycle)
 
 ```bash
-git clone https://github.com/focusgts/firefly-services-mcp.git
+git clone https://github.com/Focus-GTS/firefly-services-mcp.git
 cd firefly-services-mcp
 npm install   # builds dist/ automatically via the prepare script
 
@@ -71,7 +71,7 @@ export FIREFLY_SERVICES_CLIENT_ID=<your client id from Adobe Developer Console>
 export FIREFLY_SERVICES_CLIENT_SECRET=<your client secret>
 ```
 
-The credentials must be an **OAuth Server-to-Server** credential pair issued via the Adobe Developer Console with Firefly Services API access provisioned on the workspace. See [`examples/install-claude-code.md`](examples/install-claude-code.md) for the full credential-acquisition walkthrough or the [`firefly-services-bootstrap`](https://github.com/focusgts/firefly-services-skills/blob/main/plugins/firefly-services/skills/firefly-services-bootstrap/SKILL.md) skill for the FDE-grade detail.
+The credentials must be an **OAuth Server-to-Server** credential pair issued via the Adobe Developer Console with Firefly Services API access provisioned on the workspace. See [`examples/install-claude-code.md`](examples/install-claude-code.md) for the full credential-acquisition walkthrough or the [`firefly-services-bootstrap`](https://github.com/Focus-GTS/firefly-services-skills/blob/main/plugins/firefly-services/skills/firefly-services-bootstrap/SKILL.md) skill for the FDE-grade detail.
 
 ---
 
@@ -134,7 +134,7 @@ Full PRD: [`docs/PRD.md`](docs/PRD.md).
 ## Development
 
 ```bash
-git clone https://github.com/focusgts/firefly-services-mcp.git
+git clone https://github.com/Focus-GTS/firefly-services-mcp.git
 cd firefly-services-mcp
 npm install
 
@@ -198,4 +198,4 @@ Copyright © 2026 FocusGTS.
 
 ## Related projects
 
-- [`focusgts/firefly-services-skills`](https://github.com/focusgts/firefly-services-skills) — Companion Claude Code skills documenting the Firefly Services workflow patterns. The skills repo's [catalog](https://github.com/focusgts/firefly-services-skills/blob/main/plugins/firefly-services/skills/firefly-skills-catalog/SKILL.md) keeps an up-to-date count and index.
+- [`focusgts/firefly-services-skills`](https://github.com/Focus-GTS/firefly-services-skills) — Companion Claude Code skills documenting the Firefly Services workflow patterns. The skills repo's [catalog](https://github.com/Focus-GTS/firefly-services-skills/blob/main/plugins/firefly-services/skills/firefly-skills-catalog/SKILL.md) keeps an up-to-date count and index.

@@ -206,7 +206,7 @@ Each prompt below shows: (a) what you ask Claude, (b) what Claude does behind th
 
 ## Closing — what to say at the end
 
-> "Eighteen tools across Firefly, Photoshop, and Lightroom. Open-source, Apache-2.0. Installs in one command. Built off Adobe's official SDKs, validated against the OpenAPI specs they ship. This is the most complete community MCP server for Firefly Services — a production-grade community implementation, partner-built. The companion [`firefly-services-skills`](https://github.com/focusgts/firefly-services-skills/blob/main/plugins/firefly-services/skills/firefly-skills-catalog/SKILL.md) repo carries the playbooks covering the workflows. Both live under github.com/focusgts."
+> "Eighteen tools across Firefly, Photoshop, and Lightroom. Open-source, Apache-2.0. Installs in one command. Built off Adobe's official SDKs, validated against the OpenAPI specs they ship. This is the most complete community MCP server for Firefly Services — a production-grade community implementation, partner-built. The companion [`firefly-services-skills`](https://github.com/Focus-GTS/firefly-services-skills/blob/main/plugins/firefly-services/skills/firefly-skills-catalog/SKILL.md) repo carries the playbooks covering the workflows. Both live under github.com/focusgts."
 
 ---
 

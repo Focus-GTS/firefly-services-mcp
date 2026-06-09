@@ -94,7 +94,7 @@ claude mcp add firefly-services -- npx @focusgts/firefly-services-mcp
 ### Option 2 — From local source (during development)
 
 ```bash
-git clone https://github.com/focusgts/firefly-services-mcp.git
+git clone https://github.com/Focus-GTS/firefly-services-mcp.git
 cd firefly-services-mcp
 npm install
 claude mcp add firefly-services -- npx tsx "$(pwd)/src/server.ts"
@@ -179,7 +179,7 @@ The credentials are wrong or the workspace lacks Firefly Services entitlement. R
 
 ### Tool calls succeed but return empty `outputs`
 
-Firefly's content-safety filter may be rejecting the prompt silently. Rephrase the prompt to avoid public figures, copyrighted IP, restricted terms, or NSFW themes. The `firefly-services-troubleshoot` skill in the [companion skills repo](https://github.com/focusgts/firefly-services-skills) covers this in detail.
+Firefly's content-safety filter may be rejecting the prompt silently. Rephrase the prompt to avoid public figures, copyrighted IP, restricted terms, or NSFW themes. The `firefly-services-troubleshoot` skill in the [companion skills repo](https://github.com/Focus-GTS/firefly-services-skills) covers this in detail.
 
 ### Tool calls hit 429 (rate-limited)
 
@@ -220,6 +220,6 @@ Restart Claude Code after updating to pick up the new server version.
 ## Where to go next
 
 - [Demo script](./demo.md) — guided 12-minute walkthrough showing 5 representative workflows
-- [Companion skills repo](https://github.com/focusgts/firefly-services-skills) — the companion `firefly-services-skills` repo documents the Firefly Services workflow patterns; see the auto-updating [skills catalog](https://github.com/focusgts/firefly-services-skills/blob/main/plugins/firefly-services/skills/firefly-skills-catalog/SKILL.md) for the current index
+- [Companion skills repo](https://github.com/Focus-GTS/firefly-services-skills) — the companion `firefly-services-skills` repo documents the Firefly Services workflow patterns; see the auto-updating [skills catalog](https://github.com/Focus-GTS/firefly-services-skills/blob/main/plugins/firefly-services/skills/firefly-skills-catalog/SKILL.md) for the current index
 - [Adobe Firefly Services developer docs](https://developer.adobe.com/firefly-services/docs/) — official Adobe documentation
-- [GitHub issues](https://github.com/focusgts/firefly-services-mcp/issues) — report bugs, request features, ask questions
+- [GitHub issues](https://github.com/Focus-GTS/firefly-services-mcp/issues) — report bugs, request features, ask questions

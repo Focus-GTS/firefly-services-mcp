@@ -74,4 +74,4 @@ We're happy to credit reporters in release notes if you'd like (or keep your rep
 
 ## Past advisories
 
-None at this time. If/when security advisories are published, they will appear in [GitHub Security Advisories](https://github.com/focusgts/firefly-services-mcp/security/advisories) for this repository.
+None at this time. If/when security advisories are published, they will appear in [GitHub Security Advisories](https://github.com/Focus-GTS/firefly-services-mcp/security/advisories) for this repository.

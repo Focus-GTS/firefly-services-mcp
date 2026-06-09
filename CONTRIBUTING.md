@@ -8,7 +8,7 @@ This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.
 
 ## How to report a bug
 
-Open a [GitHub issue](https://github.com/focusgts/firefly-services-mcp/issues/new) with:
+Open a [GitHub issue](https://github.com/Focus-GTS/firefly-services-mcp/issues/new) with:
 
 - The tool name (e.g., `firefly_generate_image`) or area of the codebase
 - A minimal reproduction — the exact tool args, the env you ran it in (Claude Code version, Node version, OS)
@@ -61,7 +61,7 @@ A change that contradicts an existing ADR needs a new ADR to supersede it.
 ## Local development setup
 
 ```bash
-git clone https://github.com/focusgts/firefly-services-mcp.git
+git clone https://github.com/Focus-GTS/firefly-services-mcp.git
 cd firefly-services-mcp
 npm install           # also builds dist/ via the prepare hook
 
