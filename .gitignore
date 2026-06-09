@@ -30,3 +30,6 @@ coverage/
 # Internal audit reports — these document strategy and findings,
 # they are not part of the public-facing repo content.
 docs/AUDIT-*.md
+
+# live API test assets (never commit)
+live-test-tmp/
