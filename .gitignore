@@ -32,3 +32,6 @@ docs/AUDIT-*.md
 
 # live API test assets (never commit)
 live-test-tmp/
+
+# transient local npm publish token (never commit)
+.npm-publish-token

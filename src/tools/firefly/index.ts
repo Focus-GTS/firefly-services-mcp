@@ -14,8 +14,14 @@ import { registerExpandImage } from "./expand-image.js";
 import { registerFillImage } from "./fill-image.js";
 import { registerGenerateObjectComposite } from "./generate-object-composite.js";
 import { registerGenerateVideo } from "./generate-video.js";
+import { registerGetJobStatus } from "./get-job-status.js";
 
-export function registerFireflyTools(server: McpServer, fireflyClient: FireflyClient, tokenCache: TokenCache): void {
+export function registerFireflyTools(
+  server: McpServer,
+  fireflyClient: FireflyClient,
+  tokenCache: TokenCache,
+  clientId: string,
+): void {
   registerCheckAuth(server, tokenCache);
   registerUploadImage(server, fireflyClient);
   registerGenerateImage(server, fireflyClient);
@@ -24,4 +30,5 @@ export function registerFireflyTools(server: McpServer, fireflyClient: FireflyCl
   registerFillImage(server, fireflyClient);
   registerGenerateObjectComposite(server, fireflyClient);
   registerGenerateVideo(server, fireflyClient);
+  registerGetJobStatus(server, tokenCache, clientId);
 }

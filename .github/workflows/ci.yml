@@ -66,10 +66,10 @@ jobs:
               | FIREFLY_SERVICES_CLIENT_ID=ci-dummy FIREFLY_SERVICES_CLIENT_SECRET=ci-dummy \
                 node dist/server.js 2>/dev/null
           )"
-          # The second response (id=2) must list 18 tools.
+          # The second response (id=2) must list 19 tools.
           TOOL_COUNT="$(printf '%s\n' "$OUT" | node -e 'let n=0; require("fs").readFileSync(0,"utf8").trim().split("\n").forEach(l => { try { const j = JSON.parse(l); if (j.id === 2 && j.result && Array.isArray(j.result.tools)) n = j.result.tools.length; } catch {} }); process.stdout.write(String(n));')"
           echo "tools registered: $TOOL_COUNT"
-          test "$TOOL_COUNT" = "18"
+          test "$TOOL_COUNT" = "19"
 
   publish-dry-run:
     name: npm publish dry-run (catches packaging regressions)

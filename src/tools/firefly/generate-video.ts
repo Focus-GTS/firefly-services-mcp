@@ -142,12 +142,12 @@ const inputSchema = {
   first_frame_image: imageRefSchema
     .optional()
     .describe(
-      "Optional keyframe image used as the FIRST frame of the generated video. Provide exactly one of uploadId, url, or path.",
+      "Optional keyframe image used as the FIRST frame of the generated video. Provide exactly one of upload_id, url, or path.",
     ),
   last_frame_image: imageRefSchema
     .optional()
     .describe(
-      "Optional keyframe image used as the LAST frame of the generated video. Provide exactly one of uploadId, url, or path.",
+      "Optional keyframe image used as the LAST frame of the generated video. Provide exactly one of upload_id, url, or path.",
     ),
   camera_motion: z
     .enum(CAMERA_MOTION_VALUES)

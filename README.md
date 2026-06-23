@@ -3,7 +3,7 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![CI](https://github.com/Focus-GTS/firefly-services-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/Focus-GTS/firefly-services-mcp/actions/workflows/ci.yml)
 [![Status](https://img.shields.io/badge/status-v0.1.0-green.svg)](#status)
-[![Tools](https://img.shields.io/badge/tools-18-blue.svg)](#tools-v01-surface--18-tools)
+[![Tools](https://img.shields.io/badge/tools-19-blue.svg)](#tools-v02-surface--19-tools)
 
 Model Context Protocol server for **Adobe Firefly Services** — exposes Firefly, Photoshop API, and Lightroom API endpoints as MCP tools that Claude Code, Cursor, and other MCP-compatible AI clients can call directly.
 
@@ -26,7 +26,7 @@ Generated in seconds from a Claude Code session, each by a single MCP tool call.
 
 ## Status
 
-**v0.1.2 — 18 tools, fully implemented.** The MCP server boots over stdio, implements the MCP protocol, and registers all 18 tools across Firefly (8), Photoshop API (6), and Lightroom API (4). Test coverage: 142 unit tests + 26 mocked integration tests passing.
+**v0.2.0 — 19 tools, fully implemented.** The MCP server boots over stdio, implements the MCP protocol, and registers all 19 tools across Firefly (9), Photoshop API (6), and Lightroom API (4). Test coverage: 149 unit tests + 26 mocked integration tests passing.
 
 **Live validation status (against the Adobe Firefly Services sandbox):**
 
@@ -88,15 +88,16 @@ The credentials must be an **OAuth Server-to-Server** credential pair issued via
 
 ---
 
-## Tools (v0.1 surface — 18 tools)
+## Tools (v0.2 surface — 19 tools)
 
-### Firefly (8)
+### Firefly (9)
 - `firefly_generate_image`
 - `firefly_generate_similar`
 - `firefly_expand_image`
 - `firefly_fill_image`
 - `firefly_generate_object_composite`
 - `firefly_generate_video`
+- `firefly_get_job_status`
 - `firefly_upload_image`
 - `firefly_check_auth`
 
@@ -137,10 +138,12 @@ Key architectural decisions:
 | [001](docs/adrs/001-wrap-adobe-sdks-not-reimplement.md) | Wrap Adobe SDKs; do not reimplement the API surface |
 | [002](docs/adrs/002-node-typescript-stdio-transport.md) | Node.js + TypeScript + stdio transport |
 | [003](docs/adrs/003-single-credential-per-instance-v0.1.md) | Single-credential-per-server-instance for v0.1 |
-| [004](docs/adrs/004-storage-references.md) | Storage references: triple-mode input (`uploadId` \| `url` \| `path`), dual-mode output (URL only or inlined bytes) |
+| [004](docs/adrs/004-storage-references.md) | Storage references: triple-mode input (`upload_id` \| `url` \| `path`), dual-mode output (URL only or inlined bytes) |
 | [005](docs/adrs/005-tool-naming-convention.md) | Tool naming: `<product>_<action>_<object>` snake_case |
 
 Full PRD: [`docs/PRD.md`](docs/PRD.md).
+
+> **Two storage-reference models.** Firefly tools take an image-reference *object* — exactly one of `upload_id` (an id from `firefly_upload_image`), `url` (a pre-signed GET URL on allow-listed cloud storage), or `path` (a local file the tool auto-uploads). The Photoshop and Lightroom tools instead take **pre-signed URL strings directly** — `input_url` (GET) and `output_url` (PUT to your own bucket) — because those Adobe APIs write results to caller-supplied storage rather than hosting them. Don't mix the two shapes.
 
 ---
 

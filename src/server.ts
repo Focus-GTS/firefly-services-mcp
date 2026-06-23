@@ -70,7 +70,13 @@ async function main(): Promise<void> {
     },
   );
 
-  registerAllTools(server, { tokenCache, fireflyClient, photoshopClient, lightroomClient });
+  registerAllTools(server, {
+    tokenCache,
+    fireflyClient,
+    photoshopClient,
+    lightroomClient,
+    clientId: creds.clientId,
+  });
 
   // Step 4 — connect transport.
   const transport = new StdioServerTransport();

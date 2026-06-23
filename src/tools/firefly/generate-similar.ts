@@ -19,7 +19,7 @@ import { logger } from "../../util/logger.js";
 
 const inputSchema = {
   image: imageRefSchema.describe(
-    "Reference image to generate variations of. Provide exactly one of uploadId, url, or path.",
+    "Reference image to generate variations of. Provide exactly one of upload_id, url, or path.",
   ),
   num_variations: z
     .number()

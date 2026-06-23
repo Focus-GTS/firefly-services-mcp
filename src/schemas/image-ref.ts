@@ -81,13 +81,20 @@ export function isAllowedImageUrl(raw: string): boolean {
 
 export const imageRefSchema = z
   .object({
-    uploadId: z
+    upload_id: z
       .string()
       .min(1)
       .optional()
       .describe(
         "UUID returned by a previous firefly_upload_image call. The most efficient way to reference an image already known to Firefly.",
       ),
+    // Deprecated camelCase alias, kept for backward compatibility. Prefer
+    // `upload_id`. Normalized into `upload_id` by the transform below.
+    uploadId: z
+      .string()
+      .min(1)
+      .optional()
+      .describe("Deprecated alias for `upload_id` (snake_case is preferred). Provide `upload_id` instead."),
     url: z
       .string()
       .url()
@@ -115,6 +122,14 @@ export const imageRefSchema = z
           "one-off use; less efficient than re-using an uploadId for repeated calls.",
       ),
   })
+  .transform((v) => ({
+    // Canonical internal field is `uploadId`; `upload_id` is the public,
+    // snake_case name. Accept either on input, normalize to one shape so all
+    // downstream code (storage-refs, tool handlers) reads a single field.
+    uploadId: v.upload_id ?? v.uploadId,
+    url: v.url,
+    path: v.path,
+  }))
   .refine(
     (v) => {
       const set = [v.uploadId, v.url, v.path].filter(Boolean).length;
@@ -122,11 +137,11 @@ export const imageRefSchema = z
     },
     {
       message:
-        "Exactly one of uploadId, url, or path must be set. Got zero or multiple.",
+        "Exactly one of upload_id, url, or path must be set. Got zero or multiple.",
     },
   )
   .describe(
-    "A reference to an image. Provide exactly one of uploadId, url, or path.",
+    "A reference to an image. Provide exactly one of upload_id (preferred), url, or path.",
   );
 
 export type ImageRef = z.infer<typeof imageRefSchema>;

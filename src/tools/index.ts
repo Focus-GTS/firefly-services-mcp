@@ -19,10 +19,12 @@ export interface ToolContext {
   fireflyClient: FireflyClient;
   photoshopClient: PhotoshopClient;
   lightroomClient: LightroomClient;
+  /** OAuth client_id — needed as the x-api-key header for raw status-poll fetches. */
+  clientId: string;
 }
 
 export function registerAllTools(server: McpServer, ctx: ToolContext): void {
-  registerFireflyTools(server, ctx.fireflyClient, ctx.tokenCache);
+  registerFireflyTools(server, ctx.fireflyClient, ctx.tokenCache, ctx.clientId);
   registerPhotoshopTools(server, ctx.photoshopClient);
   registerLightroomTools(server, ctx.lightroomClient);
 }

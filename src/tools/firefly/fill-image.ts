@@ -17,10 +17,10 @@ import { logger } from "../../util/logger.js";
 
 const inputSchema = {
   image: imageRefSchema.describe(
-    "The source image to fill. Provide exactly one of uploadId, url, or path.",
+    "The source image to fill. Provide exactly one of upload_id, url, or path.",
   ),
   mask: imageRefSchema.describe(
-    "The mask image marking the area to regenerate. White pixels in the mask are replaced; black pixels are preserved. The mask's larger side must be at least 600 px. Provide exactly one of uploadId, url, or path.",
+    "The mask image marking the area to regenerate. White pixels in the mask are replaced; black pixels are preserved. The mask's larger side must be at least 600 px. Provide exactly one of upload_id, url, or path.",
   ),
   prompt: z
     .string()

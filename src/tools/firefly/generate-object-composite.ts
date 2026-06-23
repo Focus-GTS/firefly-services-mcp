@@ -44,7 +44,7 @@ function toVertical(v: "center" | "top" | "bottom" | undefined): AlignmentVertic
 
 const inputSchema = {
   image: imageRefSchema.describe(
-    "The object image to composite into a scene (e.g. a packshot). Provide exactly one of uploadId, url, or path.",
+    "The object image to composite into a scene (e.g. a packshot). Provide exactly one of upload_id, url, or path.",
   ),
   prompt: z
     .string()

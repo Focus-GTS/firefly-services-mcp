@@ -32,7 +32,7 @@ function toVertical(v: "center" | "top" | "bottom" | undefined): AlignmentVertic
 
 const inputSchema = {
   image: imageRefSchema.describe(
-    "The source image to expand. Provide exactly one of uploadId, url, or path.",
+    "The source image to expand. Provide exactly one of upload_id, url, or path.",
   ),
   mask: imageRefSchema
     .optional()
@@ -129,7 +129,7 @@ export function registerExpandImage(server: McpServer, client: FireflyClient): v
     {
       title: "Expand the canvas of an image",
       description:
-        "Generatively expand the canvas of an existing image (a.k.a. outpainting). Provide the source image, a target output size, and optionally a mask or a placement to guide where new content is added. An optional text prompt biases what fills the new pixels. Returns the generated image URL(s) and (by default) the inline image bytes so Claude can see the result directly.",
+        "Generatively expand the canvas of an existing image (a.k.a. outpainting). You MUST provide either a target output size (width + height) OR a mask that defines the expansion region — a call with neither will fail. Use width/height with an optional placement/inset to anchor the source; use a mask for a custom expansion shape (placement/inset cannot be combined with a mask). An optional text prompt biases what fills the new pixels. Returns the generated image URL(s) and (by default) the inline image bytes so Claude can see the result directly.",
       inputSchema,
     },
     async (args): Promise<CallToolResult> => {
