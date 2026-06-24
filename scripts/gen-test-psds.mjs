@@ -157,7 +157,7 @@ function buildSmartObjectSource() {
 
 function buildProductSmartObjectLayer() {
   const { bytes, srcW, srcH } = buildSmartObjectSource();
-  const linkedId = randomUUID().toUpperCase();
+  const linkedId = randomUUID();
 
   // Placement box for the smart object on the 1200x1200 canvas (centered, 600px).
   const left = (CANVAS_W - srcW) / 2;
@@ -179,7 +179,7 @@ function buildProductSmartObjectLayer() {
     bottom: top + srcH,
     right: left + srcW,
     // Visible bitmap for the smart object instance (what shows on canvas).
-    imageData: circleImage(srcSize, [230, 60, 60]),
+    imageData: circleImage(srcW, [230, 60, 60]),
     placedLayer: {
       id: linkedId,
       type: 'raster',
@@ -318,7 +318,7 @@ function main() {
 
   // --- Validate by reading template.psd back ---
   console.log('\n=== Read-back validation: template.psd layer tree ===');
-  const re = readPsd(buf, { skipCompositeImageData: true });
+  const re = readPsd(buf, { skipCompositeImageData: true, skipLayerImageData: true, skipThumbnail: true });
   console.log(`canvas: ${re.width}x${re.height}, bits/ch: ${re.bitsPerChannel}, colorMode: ${re.colorMode}`);
   console.log(`linkedFiles: ${re.linkedFiles ? re.linkedFiles.length : 0}`);
   (re.children || []).forEach((l) => describeLayer(l));

@@ -4,6 +4,14 @@ All notable changes to `@focusgts/firefly-services-mcp` are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.1]
+
+### Changed
+- Live-validated 8 more Photoshop/Lightroom tools end-to-end against the Adobe sandbox via GCS signed URLs (now 17/19 total). README status updated.
+
+### Fixed
+- scripts/gen-test-psds.mjs: corrected a variable reference, the placed-layer GUID format, and the read-back validation so it generates valid PSD test fixtures (smart object + text layer).
+
 ## [0.2.0]
 
 ### Added
