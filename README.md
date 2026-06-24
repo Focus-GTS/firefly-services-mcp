@@ -28,15 +28,15 @@ Generated in seconds from a Claude Code session, each by a single MCP tool call.
 
 **v0.2.0 — 19 tools, fully implemented.** The MCP server boots over stdio, implements the MCP protocol, and registers all 19 tools across Firefly (9), Photoshop API (6), and Lightroom API (4). Test coverage: 149 unit tests + 26 mocked integration tests passing.
 
-**Live validation status (against the Adobe Firefly Services sandbox):**
+**Live validation status (against the Adobe Firefly Services sandbox):** 12 of 19 tools live-validated end-to-end.
 
 | Surface | Tools | Status |
 |---|---|---|
-| Firefly | 8 | ✅ **Live-validated** — all 8 exercised end-to-end against the real API (auth, generate, generate-similar, expand, fill, object-composite, upload, video) |
-| Photoshop API | 6 | SDK- + mock-validated. Live validation pending — these endpoints write results to a caller-supplied pre-signed `output_url` (your own S3/Azure/GCS bucket), so live runs require storage configuration |
-| Lightroom API | 4 | SDK- + mock-validated. Live validation pending for the same reason |
+| Firefly | 9 | ✅ **Live-validated** — all 9 exercised end-to-end against the real API (auth, generate, generate-similar, expand, fill, object-composite, upload, video, job-status) |
+| Lightroom API | 4 | ✅ **3 live-validated** via GCS signed URLs (auto-tone, auto-straighten, apply-edits — each wrote a real result to a caller bucket). `apply-preset` pending an `.xmp` preset fixture |
+| Photoshop API | 6 | SDK- + mock-validated. `remove_background` exercised live (the Sensei `cutout` endpoint returned a transient `502` on the test run); the rest pending PSD/`.atn` test fixtures |
 
-The Photoshop and Lightroom APIs, by Adobe's design, do not host outputs — the caller provides a writable destination. Live validation of those 10 tools is gated on bucket configuration, not on the server. See [`docs/PRD.md`](docs/PRD.md) for the release plan.
+The Photoshop and Lightroom APIs, by Adobe's design, do not host outputs — the caller supplies a writable pre-signed `output_url` (S3 / Azure / GCS). Live validation of the remaining tools is gated on test fixtures (a PSD with a smart-object + text layer, an `.atn` action, an `.xmp` preset), not on the server. See [`docs/PRD.md`](docs/PRD.md) for the release plan.
 
 ---
 
