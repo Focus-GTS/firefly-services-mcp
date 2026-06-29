@@ -1,82 +1,85 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { MaskFormatType } from "@adobe/photoshop-apis";
 import { registerRemoveBackground } from "../../../src/tools/photoshop/remove-background.js";
-import type { PhotoshopClient } from "@adobe/photoshop-apis";
+import type { TokenCache } from "../../../src/auth/token-cache.js";
 import { callTool } from "../../util/call-tool.js";
 
-function makeServerAndClient(impl?: (req: unknown) => Promise<unknown>) {
+function makeServerAndCache(token = "tok-bg") {
   const server = new McpServer({ name: "test", version: "0.0.0" });
-  const client = {
-    removeBackground: vi.fn(
-      impl ??
-        (async () => ({
-          result: {
-            jobId: "job-bg1",
-            status: "succeeded",
-            output: { _links: { self: { href: "https://out.example/result.png" } } },
-            _links: { self: { href: "https://status.example/jobs/job-bg1" } },
-          },
-        })),
-    ),
-  } as unknown as PhotoshopClient;
-  return { server, client };
+  const tokenCache = {
+    getToken: vi.fn(async () => token),
+    status: vi.fn(),
+    invalidate: vi.fn(),
+  } as unknown as TokenCache;
+  return { server, tokenCache };
 }
 
-describe("photoshop_remove_background", () => {
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
+
+describe("photoshop_remove_background (V2)", () => {
   it("registers the tool", () => {
-    const { server, client } = makeServerAndClient();
-    registerRemoveBackground(server, client);
+    const { server, tokenCache } = makeServerAndCache();
+    registerRemoveBackground(server, tokenCache, "client-x");
     const tools = (server as unknown as { _registeredTools: Record<string, unknown> })._registeredTools;
     expect(Object.keys(tools)).toContain("photoshop_remove_background");
   });
 
-  it("passes single input/output (not arrays) to the Sensei endpoint", async () => {
-    const { server, client } = makeServerAndClient();
-    registerRemoveBackground(server, client);
+  it("POSTs to /v2/remove-background with the V2 body + auth headers", async () => {
+    const { server, tokenCache } = makeServerAndCache();
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      status: 202,
+      json: async () => ({ jobId: "job-1", statusUrl: "https://image.adobe.io/v2/status/job-1" }),
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+    registerRemoveBackground(server, tokenCache, "client-x");
+
     const res = (await callTool(server, "photoshop_remove_background", {
-      input_url: "https://in.example/photo.jpg",
-      output_url: "https://out.example/cutout.png",
-    })) as { content: Array<{ type: string; text: string }>; isError?: boolean };
+      input_url: "https://x.amazonaws.com/photo.jpg",
+    })) as { isError?: boolean; content: Array<{ text: string }> };
+
     expect(res.isError).toBeFalsy();
     const parsed = JSON.parse(res.content[0]!.text);
     expect(parsed.ok).toBe(true);
-    expect(parsed.status).toBe("succeeded");
+    expect(parsed.statusUrl).toBe("https://image.adobe.io/v2/status/job-1");
+    expect(parsed.jobId).toBe("job-1");
 
-    const call = (client.removeBackground as ReturnType<typeof vi.fn>).mock.calls[0]![0] as {
-      input: { href: string; storage: string };
-      output: { href: string; storage: string; mask?: { format?: string } };
-    };
-    expect(call.input.href).toBe("https://in.example/photo.jpg");
-    expect(call.output.href).toBe("https://out.example/cutout.png");
-    expect(call.output.mask).toBeUndefined();
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe("https://image.adobe.io/v2/remove-background");
+    expect(init.headers.Authorization).toBe("Bearer tok-bg");
+    expect(init.headers["x-api-key"]).toBe("client-x");
+    const sent = JSON.parse(init.body);
+    expect(sent.image.source.url).toBe("https://x.amazonaws.com/photo.jpg");
+    expect(sent.mode).toBe("cutout"); // default
+    expect(sent.output.mediaType).toBe("image/png"); // default
   });
 
-  it("includes mask.format when mask_format is provided", async () => {
-    const { server, client } = makeServerAndClient();
-    registerRemoveBackground(server, client);
+  it("passes mode=mask and trim when provided", async () => {
+    const { server, tokenCache } = makeServerAndCache();
+    const fetchMock = vi.fn(async () => ({ ok: true, status: 202, json: async () => ({ jobId: "j", statusUrl: "https://image.adobe.io/v2/status/j" }) }));
+    vi.stubGlobal("fetch", fetchMock);
+    registerRemoveBackground(server, tokenCache, "client-x");
     await callTool(server, "photoshop_remove_background", {
-      input_url: "https://in.example/photo.jpg",
-      output_url: "https://out.example/cutout.png",
-      mask_format: "soft",
+      input_url: "https://x.amazonaws.com/p.jpg",
+      mode: "mask",
+      trim: true,
     });
-    const call = (client.removeBackground as ReturnType<typeof vi.fn>).mock.calls[0]![0] as {
-      output: { mask?: { format?: string } };
-    };
-    expect(call.output.mask?.format).toBe(MaskFormatType.SOFT);
+    const sent = JSON.parse(fetchMock.mock.calls[0]![1].body);
+    expect(sent.mode).toBe("mask");
+    expect(sent.trim).toBe(true);
   });
 
-  it("maps SDK errors", async () => {
-    const { server, client } = makeServerAndClient(async () => {
-      throw new Error("subject not detected");
-    });
-    registerRemoveBackground(server, client);
+  it("returns a structured error on a non-OK response", async () => {
+    const { server, tokenCache } = makeServerAndCache();
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false, status: 403, statusText: "Forbidden" })));
+    registerRemoveBackground(server, tokenCache, "client-x");
     const res = (await callTool(server, "photoshop_remove_background", {
-      input_url: "https://in.example/empty.jpg",
-      output_url: "https://out.example/cutout.png",
-    })) as { content: Array<{ type: string; text: string }>; isError?: boolean };
+      input_url: "https://x.amazonaws.com/p.jpg",
+    })) as { isError?: boolean; content: Array<{ text: string }> };
     expect(res.isError).toBe(true);
-    const parsed = JSON.parse(res.content[0]!.text);
-    expect(parsed.message).toContain("subject not detected");
+    expect(JSON.parse(res.content[0]!.text).code).toBe("403");
   });
 });

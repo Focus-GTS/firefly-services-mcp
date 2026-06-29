@@ -408,73 +408,67 @@ describe("photoshop_apply_edits (integration)", () => {
   }, 8_000);
 });
 
-describe("photoshop_remove_background (integration: Sensei)", () => {
-  it("POSTs to /sensei/cutout and polls /sensei/status/{jobId} until succeeded", async () => {
-    const { captured } = installSenseiAsyncHandlers(
-      "/sensei/cutout",
-      "sensei-bg-1",
-      {
-        jobId: "sensei-bg-1",
-        status: "succeeded",
-        output: { _links: { self: { href: OUTPUT_URL } } },
-        _links: { self: { href: `${IMAGE_API_BASE}/sensei/status/sensei-bg-1` } },
-      },
+describe("photoshop_remove_background (integration: V2)", () => {
+  function buildAuth() {
+    const creds = fakeCredentials();
+    return { tokenCache: new TokenCache(creds), clientId: creds.clientId };
+  }
+
+  it("POSTs the V2 body to /v2/remove-background and returns jobId + statusUrl", async () => {
+    let captured: {
+      image?: { source?: { url?: string } };
+      mode?: string;
+      output?: { mediaType?: string };
+    } | null = null;
+    server.use(
+      http.post(`${IMAGE_API_BASE}/v2/remove-background`, async ({ request }) => {
+        captured = (await request.json()) as typeof captured;
+        return HttpResponse.json(
+          { jobId: "v2-bg-1", statusUrl: `${IMAGE_API_BASE}/v2/status/v2-bg-1` },
+          { status: 202 },
+        );
+      }),
     );
 
     const mcp = new McpServer({ name: "test", version: "0.0.0" });
-    registerRemoveBackground(mcp, buildPhotoshopClient());
+    const { tokenCache, clientId } = buildAuth();
+    registerRemoveBackground(mcp, tokenCache, clientId);
 
+    // NOTE: this file's local callTool bypasses zod, so pass values explicitly
+    // (the zod defaults are covered by the unit test).
     const res = (await callTool(mcp, "photoshop_remove_background", {
       input_url: INPUT_URL,
-      input_storage: "external",
-      output_url: OUTPUT_URL,
-      output_storage: "external",
-      mask_format: "soft",
+      mode: "cutout",
+      output_media_type: "image/png",
     })) as { isError?: boolean; content: Array<{ type: string; text: string }> };
 
     expect(res.isError).toBeFalsy();
     const parsed = JSON.parse(res.content[0]!.text);
-    expect(parsed.jobId).toBe("sensei-bg-1");
-    expect(parsed.status).toBe("succeeded");
+    expect(parsed.ok).toBe(true);
+    expect(parsed.jobId).toBe("v2-bg-1");
+    expect(parsed.statusUrl).toBe(`${IMAGE_API_BASE}/v2/status/v2-bg-1`);
 
-    const body = captured.body as {
-      input: { href: string; storage: string };
-      output: { href: string; storage: string; mask: { format: string } };
-    };
-    expect(body.input.href).toBe(INPUT_URL);
-    expect(body.output.href).toBe(OUTPUT_URL);
-    expect(body.output.mask.format).toBe("soft");
+    expect(captured!.image!.source!.url).toBe(INPUT_URL);
+    expect(captured!.mode).toBe("cutout");
+    expect(captured!.output!.mediaType).toBe("image/png");
   }, 8_000);
 
-  it("surfaces a Sensei job that polls back as failed as an SDK error", async () => {
+  it("surfaces a non-OK V2 response as a structured error", async () => {
     server.use(
-      http.post(`${IMAGE_API_BASE}/sensei/cutout`, () => {
-        return HttpResponse.json({
-          _links: { self: { href: `${IMAGE_API_BASE}/sensei/status/sensei-bg-2` } },
-        });
-      }),
-      http.get(`${IMAGE_API_BASE}/sensei/status/sensei-bg-2`, () => {
-        return HttpResponse.json({
-          jobId: "sensei-bg-2",
-          status: "failed",
-          errors: { type: "InputValidationError", description: "subject not detected" },
-          _links: { self: { href: `${IMAGE_API_BASE}/sensei/status/sensei-bg-2` } },
-        });
+      http.post(`${IMAGE_API_BASE}/v2/remove-background`, () => {
+        return HttpResponse.json({ error: "bad request" }, { status: 400 });
       }),
     );
 
     const mcp = new McpServer({ name: "test", version: "0.0.0" });
-    registerRemoveBackground(mcp, buildPhotoshopClient());
+    const { tokenCache, clientId } = buildAuth();
+    registerRemoveBackground(mcp, tokenCache, clientId);
 
     const res = (await callTool(mcp, "photoshop_remove_background", {
       input_url: INPUT_URL,
-      input_storage: "external",
-      output_url: OUTPUT_URL,
-      output_storage: "external",
     })) as { isError?: boolean; content: Array<{ type: string; text: string }> };
 
     expect(res.isError).toBe(true);
-    const parsed = JSON.parse(res.content[0]!.text);
-    expect(parsed.message).toMatch(/Job failed|InputValidationError|subject not detected/);
+    expect(JSON.parse(res.content[0]!.text).code).toBe("400");
   }, 8_000);
 });

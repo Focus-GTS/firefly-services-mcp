@@ -4,6 +4,14 @@ All notable changes to `@focusgts/firefly-services-mcp` are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.2]
+
+### Fixed
+- `photoshop_remove_background` now calls the **Remove Background V2** API (`POST /v2/remove-background`). The legacy V1 `/sensei/cutout` endpoint the SDK wraps reached End-of-Life on 2025-10-15 and returns HTTP 502; the tool now calls V2 directly with the IMS token. Live-validated against the sandbox (now **18/19 tools live**).
+
+### Changed
+- `photoshop_remove_background` input contract: V2 hosts the result itself, so `output_url`/`output_storage`/`mask_format` are removed; added `mode` (`cutout`/`mask`), `trim`, and `output_media_type`. Returns a jobId + statusUrl; poll with `firefly_get_job_status` to get the Adobe-hosted result URL.
+
 ## [0.2.1]
 
 ### Changed

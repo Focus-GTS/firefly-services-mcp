@@ -25,6 +25,6 @@ export interface ToolContext {
 
 export function registerAllTools(server: McpServer, ctx: ToolContext): void {
   registerFireflyTools(server, ctx.fireflyClient, ctx.tokenCache, ctx.clientId);
-  registerPhotoshopTools(server, ctx.photoshopClient);
+  registerPhotoshopTools(server, ctx.photoshopClient, ctx.tokenCache, ctx.clientId);
   registerLightroomTools(server, ctx.lightroomClient);
 }
