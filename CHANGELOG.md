@@ -4,6 +4,11 @@ All notable changes to `@focusgts/firefly-services-mcp` are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.3]
+
+### Changed
+- **All 19 tools now live-validated end-to-end** against the Adobe Firefly Services sandbox. `apply_actions` validated by running a real `.atn` action file through the API via GCS signed URLs. README status -> 19/19.
+
 ## [0.2.2]
 
 ### Fixed
