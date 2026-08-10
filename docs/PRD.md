@@ -1,16 +1,20 @@
 # PRD — Firefly Services MCP Server
 
 **Owner:** FocusGTS
-**Status:** v0.1 in development
-**Last updated:** 2026-05-18
+**Status:** v0.2 shipped (19 tools, live-validated)
+**Last updated:** 2026-08-10
 
 ---
 
 ## 1. Problem statement
 
-Adobe shipped Model Context Protocol (MCP) support for AEM (2025) and the Adobe Express add-on docs (March 2026), but has not shipped an official MCP server for Firefly Services — the generative API surface that drives Adobe's most strategic AI revenue line. Developers using Claude Code, Cursor, or other MCP-compatible AI clients have no clean way to call Firefly Services from inside their AI workflows. The only public alternative is one independent developer's unofficial server with three tools and effectively no traction.
+> **Landscape update (2026-08-10):** Adobe now operates its own hosted MCP servers — the consumer-tier "Adobe for creativity" connector (`adobe-creativity.adobe.io/mcp`, Apr 2026) and the enterprise **Run-Workflow MCP** (`run-workflow.adobe.io/mcp`, ~Jul 2026), which orchestrates composed Firefly Creative Production *workflows* behind an enterprise entitlement. Neither exposes the Firefly Services REST APIs as direct, parameter-level tools. The positioning below is updated accordingly; earlier copy claiming Adobe has "no official MCP" is superseded and must not be reused.
 
-FocusGTS operates a forward-deployed engineering practice working on Adobe Firefly Services at enterprise customer accounts. We ship the only public Claude Code skills for the platform — the [`firefly-services-skills`](https://github.com/Focus-GTS/firefly-services-skills) repo — and this MCP server is the natural complement. Building it now fills the developer-tooling gap and lets FocusGTS contribute usefully at the platform-tooling layer of Adobe's developer ecosystem.
+Adobe's official MCP surfaces are either consumer-tier (Adobe for creativity) or entitlement-gated workflow orchestration (Run-Workflow MCP). No official Adobe MCP server exposes the Firefly Services developer APIs — the generative REST surface that drives Adobe's most strategic AI revenue line — as direct, parameter-level tools. Developers using Claude Code, Cursor, or other MCP-compatible AI clients still have no open way to call those APIs from inside their AI workflows under their own OAuth server-to-server credentials.
+
+**The defensible claim (use this wording everywhere):** `@focusgts/firefly-services-mcp` is the only open-source MCP server exposing the Firefly Services REST APIs (Firefly image/video, Photoshop API, Lightroom API) as direct, parameter-level tools under standard OAuth server-to-server credentials. Never claim it is "the only MCP path to Firefly."
+
+FocusGTS operates a forward-deployed engineering practice working on Adobe Firefly Services at enterprise customer accounts. We ship the first public Claude Code skills for the platform — the [`firefly-services-skills`](https://github.com/Focus-GTS/firefly-services-skills) repo — and this MCP server is the natural complement. Building it fills the developer-tooling gap and lets FocusGTS contribute usefully at the platform-tooling layer of Adobe's developer ecosystem.
 
 ## 2. Goals (v0.1)
 
@@ -193,6 +197,20 @@ Four layers, from cheap to expensive.
 | **v0.2.0** | T + 6-8 weeks | Custom Models tools, HTTP transport, multi-credential, hardened |
 
 T = the day we kick off the build.
+
+### v0.3 — widen the gap (planned 2026-08, target before Adobe MAX Nov 10–12)
+
+Strategy context: Adobe now runs its own MCP servers (see [landscape.md](landscape.md)). v0.3 targets the capabilities Adobe's surfaces demonstrably lack — verified 2026-08-10 — moving the moat from "we wrapped the API first" to "we make agentic creative production enterprise-safe."
+
+| Theme | Work | Why it widens the gap |
+|---|---|---|
+| **Custom Models** | `firefly_list_custom_models`, `firefly_generate_image` support for `customModelId`; training-job status | Brand-aligned generation is the #1 enterprise ask; absent from both Adobe MCPs (carried over from original v0.2 scope, unshipped) |
+| **Batch semantics** | A `firefly_batch_generate` orchestration tool: token-bucket rate limiting, exponential backoff, job-set polling, partial-failure reporting (patterns from the `firefly-services-rate-limits` skill) | Adobe's creativity connector is explicitly sequential ("for >10 images, confirm with the user"); Run-Workflow batches only pre-composed workflows |
+| **Governance layer** | Multi-credential support with per-credential quota tracking; structured audit log of every tool call (who/what/cost); optional prompt-guardrail hook | The enterprise-governance gap no Adobe surface addresses: entitlement mapping, brand guardrails, credit governance for agent workflows |
+| **Video parity** | Track Firefly video API surface (image-to-video refs, newer model params) as it evolves | Video is Adobe's own marquee demo in chat surfaces; keep API-level parity |
+| **Distribution** | Docker image; evaluate Adobe App Builder remote-MCP template (`generator-app-remote-mcp-server-generic`) as a sanctioned hosted option | App Builder hosting is Adobe's blessed partner pattern — closest a partner gets to first-party legitimacy |
+
+Sequencing: Custom Models first (highest enterprise pull, already promised in v0.2 scope), then batch, then governance. Re-verify the landscape table in [landscape.md](landscape.md) before each release — if Adobe ships direct-API tooling (watch: `firefly-api-specs`), the same-day response is the comparison/migration story, not silence.
 
 ## 12. Open questions
 
